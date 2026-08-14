@@ -162,5 +162,35 @@
       { "label": "Aurora", "props": { "placeholder": "Ask Aurora…", "model": "Aurora 1" } },
       { "label": "Pill", "props": { "shape": "pill" } }
     ]
+  },
+  {
+    "key": "streaming-text",
+    "name": "Streaming Text 流式文本",
+    "description": "打字机逐段揭示的回答文本，光标闪烁、来源折叠面板与追问建议，完成后浮现操作按钮",
+    "category": "ai",
+    "tags": ["AI", "流式"],
+    "order": 12,
+    "visible": true,
+    "source": "components/streaming-text",
+    "variants": [
+      { "label": "Streaming", "props": {} },
+      { "label": "Fast", "props": { "speed": 8, "chunkSize": 5 } },
+      { "label": "Complete", "props": { "streaming": false } }
+    ]
+  },
+  {
+    "key": "chat-composer",
+    "name": "Chat Composer 对话输入区",
+    "description": "带标签页、推理消息与多行输入发送的对话面板，发送后自动追加消息与模拟回复",
+    "category": "ai",
+    "tags": ["AI", "对话"],
+    "order": 13,
+    "visible": true,
+    "source": "components/chat-composer",
+    "variants": [
+      { "label": "Default", "props": {} },
+      { "label": "Sensors", "props": { "tab": "sensors" } },
+      { "label": "No Reply", "props": { "replyText": null } }
+    ]
   }
 ]
