@@ -57,6 +57,7 @@ function submit() {
   if (!value) return
   emit('send', value)
   text.value = ''
+  emit('update:modelValue', '')
   nextTick(autosize)
 }
 
