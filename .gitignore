@@ -1,0 +1,12 @@
+# 工具与会话内部文件
+.zcode/
+
+# 依赖与构建产物
+node_modules/
+dist/
+*.local
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
