@@ -1,0 +1,93 @@
+[
+  {
+    "key": "button",
+    "name": "Button 按钮",
+    "description": "发光、渐变、AI 加载状态一应俱全的按钮",
+    "category": "basic",
+    "tags": ["基础", "交互"],
+    "order": 1,
+    "visible": true,
+    "source": "components/button",
+    "variants": [
+      { "label": "Solid", "props": { "type": "solid" } },
+      { "label": "Outline", "props": { "type": "outline" } },
+      { "label": "Glow", "props": { "type": "glow" } },
+      { "label": "AI Loading", "props": { "type": "glow", "loading": true } }
+    ]
+  },
+  {
+    "key": "input",
+    "name": "Input 输入框",
+    "description": "磨砂质感、聚焦发光边框、一键智能清空",
+    "category": "basic",
+    "tags": ["基础", "表单"],
+    "order": 2,
+    "visible": true,
+    "source": "components/input",
+    "variants": [
+      { "label": "Default", "props": { "placeholder": "Ask AI anything…" } },
+      { "label": "Clearable", "props": { "placeholder": "Type to clear…", "clearable": true } },
+      { "label": "Search", "props": { "type": "search", "placeholder": "Search models…", "clearable": true } }
+    ]
+  },
+  {
+    "key": "card",
+    "name": "Card 卡片",
+    "description": "玻璃拟态、光影渐变、悬浮抬升的容器",
+    "category": "basic",
+    "tags": ["基础", "容器"],
+    "order": 3,
+    "visible": true,
+    "source": "components/card",
+    "variants": [
+      { "label": "Default", "props": {} },
+      { "label": "Glass", "props": { "variant": "glass" } },
+      { "label": "Gradient", "props": { "variant": "gradient" } },
+      { "label": "Hoverable", "props": { "hoverable": true } }
+    ]
+  },
+  {
+    "key": "icon",
+    "name": "Icon 图标",
+    "description": "20 枚内置线性科技图标，随字重与主题变色",
+    "category": "basic",
+    "tags": ["基础", "图形"],
+    "order": 4,
+    "visible": true,
+    "source": "components/icon",
+    "variants": [
+      { "label": "Default", "props": { "name": "sparkles" } },
+      { "label": "AI Sparkles", "props": { "name": "sparkles", "size": 32 } },
+      { "label": "Loading", "props": { "name": "loading", "size": 32 } }
+    ]
+  },
+  {
+    "key": "layout",
+    "name": "Layout 布局",
+    "description": "容器 + 24 栅格，响应式断点自由组合",
+    "category": "basic",
+    "tags": ["基础", "布局"],
+    "order": 5,
+    "visible": true,
+    "source": "components/layout",
+    "variants": [
+      { "label": "Grid", "props": {} },
+      { "label": "Gutter", "props": { "gutter": 16 } }
+    ]
+  },
+  {
+    "key": "typography",
+    "name": "Typography 排版",
+    "description": "统一科技风文本与标题，七阶色、四级字号",
+    "category": "basic",
+    "tags": ["基础", "文字"],
+    "order": 6,
+    "visible": true,
+    "source": "components/typography",
+    "variants": [
+      { "label": "Default", "props": {} },
+      { "label": "Secondary", "props": { "type": "secondary" } },
+      { "label": "Accent", "props": { "type": "accent" } }
+    ]
+  }
+]
