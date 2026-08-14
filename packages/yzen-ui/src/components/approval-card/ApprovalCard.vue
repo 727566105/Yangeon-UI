@@ -435,11 +435,11 @@ function dismiss() {
   cursor: default;
 }
 
-/* 分页点（beautifului: rounded-full transition-all duration-300） */
+/* 分页点（beautifului: rounded-full transition-all duration-300；源 gap-1=4px，评审 M1 修复） */
 .yz-approval-card__dots {
   display: flex;
   align-items: center;
-  gap: 1px;
+  gap: 4px;
 }
 .yz-approval-card__dot-btn {
   padding: 0;

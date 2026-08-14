@@ -341,7 +341,7 @@ const rowClass = computed(() => `yz-task-rows__row yz-task-rows__row--${props.va
   color: var(--yz-green);
 }
 
-/* 折叠箭头（beautifului: size-7 -ml-2 rotate 180deg） */
+/* 折叠箭头（beautifului: size-7 -ml-2 rotate 180deg；transition 常驻双向平滑，评审 I1 修复） */
 .yz-task-rows__chevron {
   flex-shrink: 0;
   display: flex;
@@ -351,10 +351,10 @@ const rowClass = computed(() => `yz-task-rows__row yz-task-rows__row--${props.va
   height: 28px;
   margin-left: -8px;
   color: var(--yz-ink-3);
+  transition: transform 300ms var(--yz-ease-out-strong);
 }
 .yz-task-rows__chevron-icon--open {
   transform: rotate(180deg);
-  transition: transform 300ms var(--yz-ease-out-strong);
 }
 
 /* 折叠区：grid-rows 0fr/1fr + opacity（beautifului: duration-300 cubic-bezier(0.23,1,0.32,1)） */
