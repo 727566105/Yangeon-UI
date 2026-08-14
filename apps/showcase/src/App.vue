@@ -68,8 +68,10 @@ onUnmounted(() => observer?.disconnect())
 </style>
 
 <style>
-/* PRD 6.1：锚点导航平滑滚动（非 scoped，作用于全局 html） */
+/* PRD 6.1：锚点导航平滑滚动（非 scoped，作用于全局 html）；
+   scroll-padding-top 让锚点落点避开 sticky 头部遮挡（Task 10 评审遗留 Minor） */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 </style>

@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "include": ["src/**/*.ts", "src/**/*.vue"],
-  "exclude": ["src/**/__tests__", "**/*.spec.ts"],
+  // demo.vue 为展示站专用 demo 资源（由 showcase 的 vite glob 消费），
+  // 不参与库构建的类型检查与类型声明产物（避免 dist/types 混入 demo 声明）
+  "exclude": ["src/**/__tests__", "**/*.spec.ts", "src/**/demo.vue"],
   "compilerOptions": { "noEmit": false, "declaration": true }
 }
