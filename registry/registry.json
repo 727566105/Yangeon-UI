@@ -119,5 +119,48 @@
       { "label": "Python", "props": { "filename": "predict.py", "language": "Python", "code": "# 极光观测：粒子风暴预测\ndef predict(flux: float) -> float:\n    risk = model.sigmoid(flux * 0.8 - 3.2)\n    return round(risk, 4)\n\nprint(predict(4.2))" } },
       { "label": "No Stream", "props": { "streaming": false } }
     ]
+  },
+  {
+    "key": "thinking",
+    "name": "Thinking 思考过程",
+    "description": "可折叠的推理步骤——思考、检索、编码与完成状态，等宽时间戳与渐变扫光标题",
+    "category": "ai",
+    "tags": ["AI", "推理"],
+    "order": 9,
+    "visible": true,
+    "source": "components/thinking",
+    "variants": [
+      { "label": "Collapsed", "props": { "expanded": false } },
+      { "label": "Expanded", "props": { "expanded": true } }
+    ]
+  },
+  {
+    "key": "tool-chips",
+    "name": "Tool Chips 工具调用",
+    "description": "Agent 代码编辑与函数调用的紧凑 chips，带计数摘要的可折叠列表",
+    "category": "ai",
+    "tags": ["AI", "工具"],
+    "order": 10,
+    "visible": true,
+    "source": "components/tool-chips",
+    "variants": [
+      { "label": "Expanded", "props": {} },
+      { "label": "Collapsed", "props": { "expanded": false } }
+    ]
+  },
+  {
+    "key": "prompt-bar",
+    "name": "Prompt Bar 输入条",
+    "description": "带附件、模型选择、语音与发送的 AI 输入条，textarea 自动高度",
+    "category": "ai",
+    "tags": ["AI", "输入"],
+    "order": 11,
+    "visible": true,
+    "source": "components/prompt-bar",
+    "variants": [
+      { "label": "Default", "props": {} },
+      { "label": "Aurora", "props": { "placeholder": "Ask Aurora…", "model": "Aurora 1" } },
+      { "label": "Pill", "props": { "shape": "pill" } }
+    ]
   }
 ]
