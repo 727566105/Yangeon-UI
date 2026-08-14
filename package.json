@@ -1,0 +1,12 @@
+{
+  "name": "yzen-ui-monorepo",
+  "private": true,
+  "scripts": {
+    "dev:showcase": "pnpm -F showcase dev",
+    "build:showcase": "pnpm -F showcase build",
+    "build:yzen-ui": "pnpm -F yzen-ui build",
+    "test": "pnpm -r test",
+    "test:yzen-ui": "pnpm -F yzen-ui test"
+  },
+  "packageManager": "pnpm@10.28.2"
+}
