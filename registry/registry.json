@@ -192,5 +192,47 @@
       { "label": "Sensors", "props": { "tab": "sensors" } },
       { "label": "No Reply", "props": { "replyText": null } }
     ]
+  },
+  {
+    "key": "approval-card",
+    "name": "Approval Card 审批卡片",
+    "description": "AI 行动前的人工确认卡片：选项单选或自定义回复，待处理与已批准两种按钮态",
+    "category": "ai",
+    "tags": ["AI", "审批"],
+    "order": 14,
+    "visible": true,
+    "source": "components/approval-card",
+    "variants": [
+      { "label": "待处理", "props": { "status": "pending" } },
+      { "label": "已批准", "props": { "status": "approved", "selected": 0 } }
+    ]
+  },
+  {
+    "key": "task-rows",
+    "name": "Task Rows 任务行",
+    "description": "AI 任务实时状态列表：已完成勾选、执行中旋转进度环、排队圆环，明细可折叠",
+    "category": "ai",
+    "tags": ["AI", "任务"],
+    "order": 15,
+    "visible": true,
+    "source": "components/task-rows",
+    "variants": [
+      { "label": "Capsules", "props": { "variant": "capsules" } },
+      { "label": "List", "props": { "variant": "list" } }
+    ]
+  },
+  {
+    "key": "search",
+    "name": "Search 指令搜索",
+    "description": "命令式搜索卡片：实时过滤结果与空状态，支持 ⌘K 或 / 快捷键聚焦",
+    "category": "ai",
+    "tags": ["AI", "搜索"],
+    "order": 16,
+    "visible": true,
+    "source": "components/search",
+    "variants": [
+      { "label": "有结果", "props": { "modelValue": "" } },
+      { "label": "空状态", "props": { "modelValue": "zzz" } }
+    ]
   }
 ]
