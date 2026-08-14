@@ -55,6 +55,18 @@
   }
 }
 
+// 上浮淡入（beautifului: fade-up 0% opacity:0 translateY(8px)）
+@keyframes yz-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // 弹出（缩放淡入）
 @keyframes yz-pop-in {
   0% {

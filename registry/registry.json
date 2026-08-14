@@ -234,5 +234,50 @@
       { "label": "有结果", "props": { "modelValue": "" } },
       { "label": "空状态", "props": { "modelValue": "zzz" } }
     ]
+  },
+  {
+    "key": "context-cards",
+    "name": "Context Cards 上下文卡片",
+    "description": "检索知识分块列表：标题与字符数栏、正文与来源附件胶囊（PDF/CSV 徽章），入场错峰动画",
+    "category": "ai",
+    "tags": ["AI", "上下文"],
+    "order": 17,
+    "visible": true,
+    "source": "components/context-cards",
+    "variants": [
+      { "label": "Default", "props": {} },
+      { "label": "Three chunks", "props": { "count": 42, "chunks": [{ "title": "Vendor onboarding rule", "characters": "290 characters", "body": "Cold-chain certification must be verified before a new dairy can be added to the reorder workflow.", "attachment": { "tag": "PDF", "tone": "red", "filename": "Dairy Onboarding SOP.pdf" } }, { "title": "Seasonal demand row", "characters": "1,250 characters", "body": "Q4 velocity table: pistachio +18%, vanilla +6%, rocky road -11%; retire flavors below 40 scoops weekly.", "attachment": { "tag": "CSV", "tone": "green", "filename": "Sales Velocity Export.csv" } }, { "title": "Supplier reliability index", "characters": "640 characters", "body": "cone_king lead time held at 7 days across the last 12 orders; split orders showed 98.2% on-time.", "attachment": { "tag": "XLSX", "tone": "accent", "filename": "Supplier Scorecard.xlsx" } }] } },
+      { "label": "Static", "props": { "animated": false } }
+    ]
+  },
+  {
+    "key": "recommendation-card",
+    "name": "Recommendation Card 推荐卡片",
+    "description": "Agent 建议与置信度计量条，备选方案可折叠面板与一键接受",
+    "category": "ai",
+    "tags": ["AI", "建议"],
+    "order": 18,
+    "visible": true,
+    "source": "components/recommendation-card",
+    "variants": [
+      { "label": "Default", "props": {} },
+      { "label": "Alternatives", "props": { "expanded": true } },
+      { "label": "Low confidence", "props": { "confidenceLevel": 1, "confidenceLabel": "Low confidence" } }
+    ]
+  },
+  {
+    "key": "insight-cards",
+    "name": "Insight Cards 洞察卡片",
+    "description": "分页式 Agent 洞察：提及与数据高亮正文、双序列实时趋势图（图例可开关）与追问建议",
+    "category": "ai",
+    "tags": ["AI", "洞察"],
+    "order": 19,
+    "visible": true,
+    "source": "components/insight-cards",
+    "variants": [
+      { "label": "Default", "props": {} },
+      { "label": "Static chart", "props": { "live": false } },
+      { "label": "Five insights", "props": { "insights": [{ "text": [{ "text": "The worst performer in your " }, { "mention": "Creamery" }, { "text": " is Rocky Road — down " }, { "code": "-6%", "codeTone": "red" }, { "text": " or " }, { "code": "-$2,453.44", "codeTone": "red" }, { "text": "." }], "metrics": [{ "label": "Mint Chip", "dotTone": "orange", "value": "-4.41%", "valueTone": "red", "delta": "-$2,377.66", "deltaTone": "red" }, { "label": "Pistachio", "dotTone": "accent", "value": "+1.15%", "valueTone": "green", "delta": "+$617.22", "deltaTone": "green" }], "followUp": "Should I rebalance flavors?" }, { "text": [{ "text": "The fastest mover in your " }, { "mention": "Polar Array" }, { "text": " is Sorbet — up " }, { "code": "+2.4%", "codeTone": "green" }, { "text": " or " }, { "code": "+$984.20", "codeTone": "green" }, { "text": " over the last 3 days." }], "metrics": [{ "label": "Sorbet", "dotTone": "accent", "value": "+2.4%", "valueTone": "green", "delta": "+$984.20", "deltaTone": "green" }, { "label": "Cinnamon", "dotTone": "orange", "value": "-0.9%", "valueTone": "red", "delta": "-$371.05", "deltaTone": "red" }], "followUp": "Should I promote Sorbet next week?" }, { "text": [{ "text": "Shelf-life risk flagged at " }, { "mention": "Depot B" }, { "text": " — " }, { "code": "14", "codeTone": "red" }, { "text": " items expire before the weekend window." }], "metrics": [{ "label": "Expiring items", "dotTone": "orange", "value": "14", "valueTone": "red", "delta": "-6 vs last week", "deltaTone": "red" }, { "label": "Frozen stock", "dotTone": "accent", "value": "23%", "valueTone": "green", "delta": "+5% buffer", "deltaTone": "green" }], "followUp": "Should I run a clearance batch?" }, { "text": [{ "text": "Forecast window shows aurora probability rising over " }, { "mention": "Lake Site" }, { "text": " — peak " }, { "code": "22:00-01:00", "codeTone": "ink" }, { "text": " local time." }], "metrics": [{ "label": "Peak kp", "dotTone": "accent", "value": "5.4", "valueTone": "green", "delta": "+0.6", "deltaTone": "green" }, { "label": "Clear sky", "dotTone": "orange", "value": "68%", "valueTone": "green", "delta": "+12%", "deltaTone": "green" }], "followUp": "Should I queue the night survey?" }, { "text": [{ "text": "Churn among weekly subscribers climbed " }, { "code": "+1.8%", "codeTone": "red" }, { "text": " — " }, { "code": "23", "codeTone": "red" }, { "text": " accounts left the waitlist cohort." }], "metrics": [{ "label": "Churn rate", "dotTone": "orange", "value": "4.9%", "valueTone": "red", "delta": "+1.8%", "deltaTone": "red" }, { "label": "Active subs", "dotTone": "accent", "value": "1,204", "valueTone": "green", "delta": "+38", "deltaTone": "green" }], "followUp": "Should I draft a win-back campaign?" }] } }
+    ]
   }
 ]
