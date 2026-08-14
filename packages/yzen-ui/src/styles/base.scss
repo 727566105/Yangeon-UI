@@ -1,0 +1,34 @@
+@use 'variables.scss' as *;
+
+:root {
+  color-scheme: light;
+}
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: $yz-font-sans;
+  font-size: $yz-font-size-sm;
+  line-height: $yz-line-height-normal;
+  color: $yz-ink;
+  background: $yz-page;
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+// 全局动效开关
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --yz-motion-enabled: 0;
+  }
+}
+[data-motion-off] {
+  --yz-motion-enabled: 0;
+}
