@@ -56,7 +56,7 @@ function handleClick(evt: MouseEvent) {
   border: 1px solid transparent;
   border-radius: $yz-radius-control;
   font-family: $yz-font-sans;
-  font-weight: $yz-font-weight-medium;
+  font-weight: var(--yz-font-weight-medium);
   cursor: pointer;
   transition:
     background-color $yz-duration $yz-ease-out-strong,
