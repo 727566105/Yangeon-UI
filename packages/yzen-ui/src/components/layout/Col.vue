@@ -30,6 +30,8 @@ const classes = computed(() => {
 </template>
 
 <style scoped lang="scss">
+@use 'sass:math';
+
 .yz-col {
   flex: 0 0 auto;
   box-sizing: border-box;
@@ -37,8 +39,8 @@ const classes = computed(() => {
 }
 
 @for $i from 1 through 24 {
-  .yz-col--#{$i} { width: percentage($i / 24); }
-  .yz-col--offset-#{$i} { margin-left: percentage($i / 24); }
+  .yz-col--#{$i} { width: math.percentage(math.div($i, 24)); }
+  .yz-col--offset-#{$i} { margin-left: math.percentage(math.div($i, 24)); }
 }
 .yz-col--offset-0 { margin-left: 0; }
 
@@ -46,7 +48,7 @@ $bps: (xs: 480px, sm: 640px, md: 768px, lg: 1024px, xl: 1280px);
 @each $bp, $width in $bps {
   @media (min-width: $width) {
     @for $i from 1 through 24 {
-      .yz-col--#{$bp}-#{$i} { width: percentage($i / 24); }
+      .yz-col--#{$bp}-#{$i} { width: math.percentage(math.div($i, 24)); }
     }
   }
 }

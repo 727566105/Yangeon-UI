@@ -12,7 +12,7 @@ const active = computed(() => props.variants?.[props.variantIndex ?? 0]?.props ?
 
 <template>
   <div style="display: flex; align-items: center; gap: 16px">
-    <YzIcon v-bind="active" :size="24" />
+    <YzIcon v-bind="active" :size="active.size ?? 24" />
     <YzText size="xs" mono type="secondary">icon / sparkles</YzText>
   </div>
 </template>

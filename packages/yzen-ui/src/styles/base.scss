@@ -28,6 +28,13 @@ body {
   :root {
     --yz-motion-enabled: 0;
   }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 [data-motion-off] {
   --yz-motion-enabled: 0;
