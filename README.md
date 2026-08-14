@@ -2,7 +2,7 @@
 
 > Build AI-native interfaces — 面向AI时代的轻量化科技组件基座
 
-专属 Yangzai 的 AI 科技风个人组件库与组件工作台，展示体验对标 [beautifului.dev](https://www.beautifului.dev/)。
+专属 Yangzai 的 AI 科技风个人组件库与组件工作台，展示站样式与 [beautifului.dev](https://www.beautifului.dev/) 保持一致（浅色默认 + 深色可切换主题）。
 
 ## 产品形态：一库双端
 
