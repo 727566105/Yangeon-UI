@@ -151,7 +151,18 @@ watch(
   (v) => (innerIndex.value = v),
 )
 
-const current = computed(() => props.insights[innerIndex.value] ?? props.insights[0])
+// 空数据守卫（B2 评审 Minor：insights: [] 时避免 current.text 运行时错误）
+const current = computed(() => {
+  const c = props.insights[innerIndex.value] ?? props.insights[0]
+  return (
+    c ?? {
+      text: [],
+      metrics: [],
+      followUp: '',
+      delta: { value: 0, trend: 'up', label: '' },
+    }
+  )
+})
 
 function goTo(i: number) {
   const next = Math.max(0, Math.min(props.insights.length - 1, i))

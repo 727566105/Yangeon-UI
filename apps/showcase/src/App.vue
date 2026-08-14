@@ -68,15 +68,5 @@ html {
   scroll-behavior: smooth;
 }
 
-/* 区块入场动画（beautifului: fade-up 600ms ease-out-strong，stagger 由行内 animation-delay 控制） */
-@keyframes yz-fade-up {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* 区块入场动画 yz-fade-up 已由组件库 animations.scss 全局提供（B2 评审 Minor：移除本地重复定义） */
 </style>
