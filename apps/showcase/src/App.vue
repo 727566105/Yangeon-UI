@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import SiteHeader from './components/SiteHeader.vue'
-import SiteNav from './components/SiteNav.vue'
+import SiteSidebar from './components/SiteSidebar.vue'
 import ComponentSection from './components/ComponentSection.vue'
-import { registryEntries, componentMap, CATEGORY_LABELS } from './registry'
-import { useGroups } from './groups'
+import { registryEntries, componentMap } from './registry'
 
-const categories = useGroups()
 const activeKey = ref<string | null>(null)
 
 // IntersectionObserver 高亮当前区块
@@ -30,48 +27,56 @@ onUnmounted(() => observer?.disconnect())
 </script>
 
 <template>
-  <SiteHeader />
-  <div class="layout">
-    <SiteNav :active-key="activeKey" />
-    <main class="content">
-      <div v-for="(entries, category) in categories" :key="category" class="category">
-        <h2 class="category__title">{{ CATEGORY_LABELS[category] }}</h2>
+  <main class="shell">
+    <div class="shell__grid">
+      <SiteSidebar :active-key="activeKey" />
+      <div class="shell__content">
         <ComponentSection
-          v-for="e in entries"
+          v-for="e in registryEntries"
           :key="e.key"
           :entry="e"
           :component="componentMap[e.key]"
+          :index="e.order"
         />
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 </template>
 
 <style scoped>
-.layout {
-  display: flex;
-  gap: 32px;
-  max-width: 72rem;
+/* 布局对齐 beautifului.dev：960px 居中容器 + 发丝边框；桌面端 288px 侧栏网格 */
+.shell {
   margin-inline: auto;
-  padding: 32px 24px 80px;
+  max-width: 960px;
+  background: var(--yz-page);
+  box-shadow: 0 0 0 1px var(--yz-line);
 }
-.content {
-  flex: 1;
-  min-width: 0;
+.shell__grid {
+  display: block;
 }
-.category__title {
-  margin: 0 0 24px;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--yz-ink);
+@media (min-width: 1024px) {
+  .shell__grid {
+    display: grid;
+    grid-template-columns: 288px minmax(0, 1fr);
+  }
 }
 </style>
 
 <style>
-/* PRD 6.1：锚点导航平滑滚动（非 scoped，作用于全局 html）；
-   scroll-padding-top 让锚点落点避开 sticky 头部遮挡（Task 10 评审遗留 Minor） */
+/* PRD 6.1：锚点导航平滑滚动 + 落点避让（beautifului: scroll-mt-8 由区块承担，全局无需 scroll-padding） */
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 80px;
+}
+
+/* 区块入场动画（beautifului: fade-up 600ms ease-out-strong，stagger 由行内 animation-delay 控制） */
+@keyframes yz-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
