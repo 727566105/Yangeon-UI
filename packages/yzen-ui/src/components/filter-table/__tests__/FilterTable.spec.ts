@@ -71,5 +71,10 @@ describe('YzFilterTable', () => {
     const chips = wrapper.findAll('.yz-filter-table__chip')
     expect(chips).toHaveLength(2)
     expect(chips[1].text()).toContain('待处理')
+    // 徽章文案与 statuses prop 同源（C1 I-2）
+    expect(wrapper.find('.yz-filter-table__status--todo').text()).toBe('待处理')
+    // statuses 未覆盖的 key 走兜底文案
+    expect(wrapper.find('.yz-filter-table__status--progress').text()).toBe('进行中')
+    expect(wrapper.find('.yz-filter-table__status--done').text()).toBe('已完成')
   })
 })

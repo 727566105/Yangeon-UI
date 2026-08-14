@@ -1,7 +1,16 @@
-import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi } from 'vitest'
+import { mount, type VueWrapper } from '@vue/test-utils'
 import SidebarNav from '../SidebarNav.vue'
 import type { NavGroup } from '../SidebarNav.vue'
+
+// stub 根元素视口位置（happy-dom 的 getBoundingClientRect 恒为 0，需显式 stub）
+function stubViewport(wrapper: VueWrapper, visible: boolean) {
+  const base = { width: 240, height: 40, x: 0, y: 0, left: 0, right: 240, toJSON: () => ({}) }
+  const rect = visible
+    ? { ...base, top: 80, bottom: 120 }
+    : { ...base, top: -300, bottom: -260 }
+  vi.spyOn(wrapper.element, 'getBoundingClientRect').mockReturnValue(rect as unknown as DOMRect)
+}
 
 describe('YzSidebarNav', () => {
   it('renders workspace header, search with kbd, new-task button and nav groups', () => {
@@ -79,9 +88,10 @@ describe('YzSidebarNav', () => {
   it('emits create for the new-task button and slash shortcut focuses search', async () => {
     // attachTo：happy-dom 中未挂载的 input 无法获得焦点
     const wrapper = mount(SidebarNav, { attachTo: document.body })
+    stubViewport(wrapper, true)
     await wrapper.find('.yz-sidebar-nav__new').trigger('click')
     expect(wrapper.emitted('create')).toBeTruthy()
-    // "/" 全局快捷键聚焦搜索框
+    // "/" 全局快捷键（根元素在视口内）聚焦搜索框
     window.dispatchEvent(new KeyboardEvent('keydown', { key: '/' }))
     expect(wrapper.emitted('shortcut')).toEqual([['slash']])
     const input = wrapper.find('.yz-sidebar-nav__search-input').element as HTMLInputElement
@@ -89,6 +99,22 @@ describe('YzSidebarNav', () => {
     // 输入态下 "/" 不拦截
     input.dispatchEvent(new KeyboardEvent('keydown', { key: '/', bubbles: true }))
     expect(wrapper.emitted('shortcut')).toEqual([['slash']])
+    wrapper.unmount()
+  })
+
+  it('gates "/" shortcut by viewport visibility (C1 I-1): off-screen never fires', async () => {
+    const wrapper = mount(SidebarNav, { attachTo: document.body })
+    const input = wrapper.find('.yz-sidebar-nav__search-input').element as HTMLInputElement
+    // 视口外：不响应（不 preventDefault、不聚焦、不 emit）
+    stubViewport(wrapper, false)
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '/' }))
+    expect(wrapper.emitted('shortcut')).toBeUndefined()
+    expect(document.activeElement).not.toBe(input)
+    // 视口内：响应
+    stubViewport(wrapper, true)
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '/' }))
+    expect(wrapper.emitted('shortcut')).toEqual([['slash']])
+    expect(document.activeElement).toBe(input)
     wrapper.unmount()
   })
 

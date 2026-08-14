@@ -184,7 +184,22 @@ function select(item: NavItem) {
 watch(innerActive, () => nextTick(updatePill))
 
 // --- 快捷键 "/" 聚焦搜索（与 YzSearch 同一守卫：输入态不拦截）---
+// 可见性门控（评审 C1 I-1）：仅当组件根元素与视口相交时才响应 "/"，
+// 避免展示站同页挂载时与 YzSearch 等无条件监听 "/" 的组件冲突抢焦点
+const rootEl = ref<HTMLElement | null>(null)
 const searchEl = ref<HTMLInputElement | null>(null)
+
+function isInViewport(): boolean {
+  const el = rootEl.value
+  if (!el || typeof window === 'undefined') return false
+  const rect = el.getBoundingClientRect()
+  return (
+    rect.bottom > 0 &&
+    rect.top < window.innerHeight &&
+    rect.right > 0 &&
+    rect.left < window.innerWidth
+  )
+}
 
 function isTypingTarget(el: EventTarget | null): boolean {
   if (!(el instanceof HTMLElement)) return false
@@ -193,7 +208,7 @@ function isTypingTarget(el: EventTarget | null): boolean {
 
 function onKeydown(e: KeyboardEvent) {
   if (!props.shortcut) return
-  if (e.key === '/' && !isTypingTarget(e.target)) {
+  if (e.key === '/' && !isTypingTarget(e.target) && isInViewport()) {
     e.preventDefault()
     searchEl.value?.focus()
     emit('shortcut', 'slash')
@@ -234,7 +249,7 @@ const noGroups = computed(() => filteredGroups.value.length === 0)
 </script>
 
 <template>
-  <nav class="yz-sidebar-nav" aria-label="工作区导航">
+  <nav ref="rootEl" class="yz-sidebar-nav" aria-label="工作区导航">
     <!-- 工作区切换（beautifului: mb-2 w-full gap-2.5 rounded-control p-1.5 hover:bg-hover） -->
     <div class="yz-sidebar-nav__ws">
       <button

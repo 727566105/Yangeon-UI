@@ -97,14 +97,16 @@ watch(
   (v) => (active.value = v),
 )
 
-const STATUS_LABELS: Record<FilterStatus, string> = {
+// 徽章文案兜底（评审 C1 I-2：文案从 statuses prop 反查，与 chips 标签同源；
+// 仅当自定义 statuses 未覆盖某状态 key 时使用兜底）
+const FALLBACK_STATUS_LABELS: Record<FilterStatus, string> = {
   todo: '待办',
   progress: '进行中',
   done: '已完成',
 }
 
 function statusLabel(status: FilterStatus): string {
-  return STATUS_LABELS[status]
+  return props.statuses.find((s) => s.key === status)?.label ?? FALLBACK_STATUS_LABELS[status]
 }
 
 // 各状态计数（beautifului chip 右上角 tabular 数字）
