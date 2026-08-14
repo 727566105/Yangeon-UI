@@ -349,11 +349,11 @@ onUnmounted(() => {
   opacity: 1;
 }
 
-/* 头部操作按钮（beautifului: size-6 rounded-[6px] text-ink-3 hover:bg-hover hover:text-ink-2） */
+/* 头部操作按钮（beautifului: size-6 rounded-[6px] text-ink-3 hover:bg-hover hover:text-ink-2；源 gap-1=4px） */
 .yz-chat-composer__head-actions {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 .yz-chat-composer__head-btn {
   display: flex;
