@@ -29,7 +29,16 @@ Vue 3 · TypeScript · Vite · SCSS + CSS Variables · pnpm monorepo
 
 ## 当前状态
 
-📄 **文档阶段** — PRD 与可行性研究已完成，开发尚未启动。
+🚧 **V1.0 开发中** — monorepo + 双主题 token + 六基础组件 + Showcase 骨架已完成。
+
+## 快速启动
+
+```bash
+pnpm install
+pnpm dev:showcase   # 启动展示站（http://localhost:5173）
+pnpm test           # 运行全部测试
+pnpm build:showcase # 构建展示站
+```
 
 ## 开发指引（占位）
 
