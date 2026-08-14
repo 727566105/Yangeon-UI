@@ -1,5 +1,7 @@
 # 工具与会话内部文件
 .zcode/
+.superpowers/
+.worktrees/
 
 # 依赖与构建产物
 node_modules/
