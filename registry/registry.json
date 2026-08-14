@@ -89,5 +89,35 @@
       { "label": "Secondary", "props": { "type": "secondary" } },
       { "label": "Accent", "props": { "type": "accent" } }
     ]
+  },
+  {
+    "key": "ai-loading",
+    "name": "AI Loading 智能加载",
+    "description": "像素波浪、点阵跳动、轨道旋转三形态 AI 加载器，渐变扫光文字与计时",
+    "category": "ai",
+    "tags": ["AI", "加载"],
+    "order": 7,
+    "visible": true,
+    "source": "components/ai-loading",
+    "variants": [
+      { "label": "Drive", "props": { "variant": "drive" } },
+      { "label": "Dots", "props": { "variant": "dots" } },
+      { "label": "Orbit", "props": { "variant": "orbit" } }
+    ]
+  },
+  {
+    "key": "code-block",
+    "name": "Code Block 代码块",
+    "description": "Agent 生成的代码逐行流式入场，文件头与一键复制",
+    "category": "ai",
+    "tags": ["AI", "代码"],
+    "order": 8,
+    "visible": true,
+    "source": "components/code-block",
+    "variants": [
+      { "label": "TypeScript", "props": {} },
+      { "label": "Python", "props": { "filename": "predict.py", "language": "Python", "code": "# 极光观测：粒子风暴预测\ndef predict(flux: float) -> float:\n    risk = model.sigmoid(flux * 0.8 - 3.2)\n    return round(risk, 4)\n\nprint(predict(4.2))" } },
+      { "label": "No Stream", "props": { "streaming": false } }
+    ]
   }
 ]

@@ -1,0 +1,87 @@
+// 全局动画库：beautifului.dev 实测 keyframes（移植组件共用）
+// 已由 theme/index.scss 引入，组件样式内直接引用动画名
+
+// 像素点亮（loading 点阵）
+@keyframes yz-pixel-on {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  18%,
+  42% {
+    opacity: 1;
+  }
+}
+
+// 渐变文字扫光
+@keyframes yz-shimmer-text {
+  0% {
+    background-position: 150%;
+  }
+  100% {
+    background-position: -50%;
+  }
+}
+
+// 思考光标闪烁
+@keyframes yz-caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+// 均衡器跳动（音频/加载条）
+@keyframes yz-eq-bounce {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+// 淡入
+@keyframes yz-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+// 弹出（缩放淡入）
+@keyframes yz-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// 旋转
+@keyframes yz-spin {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+// 流式文本逐行入场（模糊淡入）
+@keyframes yz-stream-in {
+  0% {
+    opacity: 0;
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
