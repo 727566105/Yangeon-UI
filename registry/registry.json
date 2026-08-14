@@ -928,5 +928,93 @@
         }
       }
     ]
+  },
+  {
+    "key": "records-table",
+    "name": "Records Table 记录表格",
+    "description": "极光观测记录数据表格，等宽数据元素与状态徽章",
+    "category": "ai",
+    "tags": [
+      "AI",
+      "数据"
+    ],
+    "order": 23,
+    "visible": true,
+    "source": "components/records-table",
+    "variants": [
+      {
+        "label": "默认",
+        "props": {}
+      },
+      {
+        "label": "空数据",
+        "props": {
+          "records": []
+        }
+      }
+    ]
+  },
+  {
+    "key": "fine-tune-card",
+    "name": "Fine-tune Card 微调卡片",
+    "description": "AI 模型微调参数控制卡，滑块与配置摘要",
+    "category": "ai",
+    "tags": [
+      "AI",
+      "配置"
+    ],
+    "order": 24,
+    "visible": true,
+    "source": "components/fine-tune-card",
+    "variants": [
+      {
+        "label": "默认",
+        "props": {}
+      },
+      {
+        "label": "训练中",
+        "props": {
+          "training": true
+        }
+      }
+    ]
+  },
+  {
+    "key": "selection-actions",
+    "name": "Selection Actions 选择操作",
+    "description": "选中文本后浮现的 AI 编辑操作条，描述输入与一键改写",
+    "category": "ai",
+    "tags": [
+      "AI",
+      "编辑"
+    ],
+    "order": 25,
+    "visible": true,
+    "source": "components/selection-actions",
+    "variants": [
+      {
+        "label": "隐藏",
+        "props": {
+          "open": false
+        }
+      },
+      {
+        "label": "显示",
+        "props": {
+          "open": true,
+          "position": {
+            "x": 230,
+            "y": 40
+          }
+        }
+      },
+      {
+        "label": "已输入",
+        "props": {
+          "open": true,
+          "modelValue": "make it shorter"
+        }
+      }
+    ]
   }
 ]
