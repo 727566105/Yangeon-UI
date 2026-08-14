@@ -32,7 +32,7 @@ onUnmounted(() => observer?.disconnect())
 <template>
   <SiteHeader />
   <div class="layout">
-    <SiteNav :active-key="activeKey" @click.prevent="() => {}" />
+    <SiteNav :active-key="activeKey" />
     <main class="content">
       <div v-for="(entries, category) in categories" :key="category" class="category">
         <h2 class="category__title">{{ CATEGORY_LABELS[category] }}</h2>
@@ -64,5 +64,12 @@ onUnmounted(() => observer?.disconnect())
   font-size: 20px;
   font-weight: 600;
   color: var(--yz-ink);
+}
+</style>
+
+<style>
+/* PRD 6.1：锚点导航平滑滚动（非 scoped，作用于全局 html） */
+html {
+  scroll-behavior: smooth;
 }
 </style>
