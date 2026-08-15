@@ -143,18 +143,25 @@ yzen-ui/
 ### 5.2 Registry 数据契约
 
 ```ts
+// 双语文案结构（showcase 中英文切换与 Console 编辑共用；zh 为默认语言）
+interface LocalizedText { zh: string; en: string }
+
 interface RegistryEntry {
   key: string            // 组件标识，如 'button'
-  name: string           // 展示名，如 'Button 按钮'
-  description: string    // 一句话说明（展示站用）
+  name: LocalizedText    // 展示名，如 { zh: 'Button 按钮', en: 'Button' }
+  description: LocalizedText  // 一句话说明（展示站用）
   category: string       // basic | ai | advanced
-  tags: string[]
+  tags: LocalizedText[]
   order: number          // 展示站编号顺序
   visible: boolean       // 是否上展示站
   source: string         // 源码位置（相对 packages/yzen-ui/src 的路径约定）
-  variants: { label: string; props: Record<string, unknown> }[]
+  variants: { id: string; label: LocalizedText; props: Record<string, unknown> }[]
 }
 ```
+
+> 注（2026-08-15 修订）：契约已升级为双语结构——组件文案（name/description/tags/variant label）
+> 作为元信息随 registry.json 维护（Console 编辑、Showcase 构建期读取），不再散落在应用代码；
+> 类型与校验实现见 `packages/shared`（`@yzen-ui/shared`）。
 
 ### 5.3 数据流
 
@@ -312,6 +319,10 @@ Console 编辑 ──本地API──▶ registry/registry.json ──构建期�
 
 - Console 本地 API 仅监听 127.0.0.1，不对局域网暴露
 - （后置增强）动态预览外部源码时必须运行于沙箱 iframe（sandbox="allow-scripts"，无同源权限），与主应用 postMessage 通信
+
+> 修订（2026-08-15）：管理端已落地实施，监听调整为 `0.0.0.0` 以支持局域网设备访问
+> （个人工具，API 无鉴权——仅限可信网络使用；如部署到不可信网络需恢复 127.0.0.1
+> 或增加鉴权层）。沙箱预览已实现，遵循上述 sandbox 约束。
 
 ## 11. 版本迭代计划
 

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useGroups } from '../groups'
+import { categoryMap } from '../categories'
 import { useI18n } from '../i18n'
 
 defineProps<{ activeKey: string | null }>()
 const groupByCategory = useGroups()
-const { t, locale, setLocale } = useI18n()
+const { t, locale, setLocale, localized } = useI18n()
 
 // 胶囊主题切换（beautifului 同款：滑块位移 + 双图标位）
 const isDark = ref(document.documentElement.dataset.theme === 'dark')
@@ -86,7 +87,7 @@ function setTheme(dark: boolean) {
       <div class="sidebar__nav-scroll">
         <nav :aria-label="t('sidebar.navAria')">
           <div v-for="(entries, category) in groupByCategory" :key="category" class="sidebar__group">
-            <p class="sidebar__group-label">{{ t(`categories.${category}`) || category }}</p>
+            <p class="sidebar__group-label">{{ localized(categoryMap[category]?.label) || category }}</p>
             <ul class="sidebar__list">
               <li v-for="e in entries" :key="e.key">
                 <a
@@ -95,7 +96,7 @@ function setTheme(dark: boolean) {
                   :href="`#section-${e.key}`"
                 >
                   <span class="sidebar__num">{{ String(e.order).padStart(2, '0') }}</span>
-                  {{ t(`registry.entries.${e.key}.name`) }}
+                  {{ localized(e.name) }}
                 </a>
               </li>
             </ul>

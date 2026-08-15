@@ -10,6 +10,12 @@ import { en } from './messages/en'
 export type Locale = 'zh' | 'en'
 export type Messages = typeof zh
 
+// 注册表双语文案结构（registry.json 中 name/description/tags/variant label 的类型）
+export interface LocalizedText {
+  zh: string
+  en: string
+}
+
 const STORAGE_KEY = 'yz-locale'
 
 // 兼容测试环境（happy-dom 下 localStorage 仅挂 window，不暴露为裸全局）
@@ -48,6 +54,11 @@ export function tList(path: string): string[] {
   return Array.isArray(v) && v.every((x) => typeof x === 'string') ? (v as string[]) : []
 }
 
+/** 取注册表双语文案（registry.json 结构）在当前语言下的值；locale 异常时回退 zh */
+export function localized(text: LocalizedText): string {
+  return text[locale.value] ?? text.zh ?? ''
+}
+
 function syncDom() {
   document.documentElement.lang = locale.value === 'zh' ? 'zh-CN' : 'en'
   document.title = t('app.title')
@@ -64,5 +75,5 @@ export function setLocale(next: Locale) {
 syncDom()
 
 export function useI18n() {
-  return { locale, setLocale, t, tList }
+  return { locale, setLocale, t, tList, localized }
 }

@@ -1,0 +1,26 @@
+[
+  {
+    "key": "basic",
+    "label": {
+      "zh": "基础组件",
+      "en": "Basic"
+    },
+    "order": 1
+  },
+  {
+    "key": "ai",
+    "label": {
+      "zh": "AI 场景",
+      "en": "AI"
+    },
+    "order": 2
+  },
+  {
+    "key": "advanced",
+    "label": {
+      "zh": "进阶组件",
+      "en": "Advanced"
+    },
+    "order": 3
+  }
+]

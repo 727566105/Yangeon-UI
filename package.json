@@ -6,7 +6,9 @@
     "build:showcase": "pnpm -F showcase build",
     "build:yzen-ui": "pnpm -F yzen-ui build",
     "test": "pnpm -r test",
-    "test:yzen-ui": "pnpm -F yzen-ui test"
+    "test:yzen-ui": "pnpm -F yzen-ui test",
+    "dev:console": "pnpm -F console dev",
+    "build:console": "pnpm -F console build"
   },
   "packageManager": "pnpm@10.28.2"
 }

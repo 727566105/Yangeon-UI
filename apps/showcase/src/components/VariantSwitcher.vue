@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import type { Variant } from '../registry'
 import { useI18n } from '../i18n'
 
-// 显示变体：注册表数据 + i18n 计算出的 label（由 ComponentSection 提供）
-defineProps<{ variants: Array<Variant & { label: string }>; modelValue: number }>()
+// 显示变体：由父级从 registry 双语 label 计算好当前语言的显示文本（id + label + props）
+interface DisplayVariant {
+  id: string
+  label: string
+  props: Record<string, unknown>
+}
+
+defineProps<{ variants: DisplayVariant[]; modelValue: number }>()
 defineEmits<{ (e: 'update:modelValue', v: number): void }>()
 const { t } = useI18n()
 </script>

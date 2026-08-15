@@ -1,23 +1,24 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { Component } from 'vue'
 import VariantSwitcher from './VariantSwitcher.vue'
 import { YzIcon } from 'yzen-ui'
+import { DemoStage } from '@yzen-ui/shared'
 import type { RegistryEntry } from '../registry'
 import { useI18n } from '../i18n'
 
 const props = defineProps<{ entry: RegistryEntry; component: Component; index: number }>()
-const { t, tList } = useI18n()
+const { t, localized } = useI18n()
 
 const activeVariant = ref(0)
 const copied = ref(false)
 const viewCodeOpen = ref(false)
 
-// 变体切换显示名（label 迁至 i18n messages：registry.entries.<key>.variants.<id>）
+// 变体切换显示名（label 来自 registry.json 双语字段，随语言响应式切换）
 const displayVariants = computed(() =>
   props.entry.variants.map((v) => ({
     ...v,
-    label: t(`registry.entries.${props.entry.key}.variants.${v.id}`),
+    label: localized(v.label),
   })),
 )
 
@@ -26,23 +27,8 @@ const sectionStyle = computed(() => ({
   animation: `yz-fade-up 600ms var(--yz-ease-out-strong) ${(props.index - 1) * 60}ms both`,
 }))
 
-// demo 组件（异步加载，构建期注册；文件位于 apps/showcase/src/components/，到仓库根 4 级）
-// 必须用 defineAsyncComponent 包装 loader——直接传 loader 函数会被 Vue 当函数式组件调用，
-// 返回的 Promise 会被字符串化渲染成 [object Promise]（实测缺陷）
-const demoLoaders = import.meta.glob(
-  '../../../../packages/yzen-ui/src/components/*/demo.vue',
-  { import: 'default' },
-)
-const demos = Object.fromEntries(
-  Object.entries(demoLoaders).map(([path, loader]) => [
-    path,
-    // import.meta.glob 类型为 () => Promise<unknown>，defineAsyncComponent 需要 () => Promise<Component>
-    defineAsyncComponent(loader as unknown as () => Promise<Component>),
-  ]),
-)
-const currentDemo = computed(
-  () => demos[`../../../../packages/yzen-ui/src/components/${props.entry.key}/demo.vue`],
-)
+// demo 渲染由 @yzen-ui/shared 的 DemoStage 承担（glob + defineAsyncComponent 包装，
+// 防 [object Promise] 缺陷；showcase 与 console 同一渲染路径）
 
 // 组件源码（构建期 ?raw 注入，用于复制代码与查看代码）
 // 展示完整组件实现文件（<Name>.vue），而非薄壳 demo.vue（对齐 beautifului 的 View code：
@@ -81,20 +67,20 @@ async function copyCode() {
     <div class="component-section__head">
       <span class="component-section__num">{{ String(entry.order).padStart(2, '0') }}</span>
       <div class="component-section__title-wrap">
-        <h3 class="component-section__name">{{ t(`registry.entries.${entry.key}.name`) }}</h3>
+        <h3 class="component-section__name">{{ localized(entry.name) }}</h3>
         <span
-          v-for="tag in tList(`registry.entries.${entry.key}.tags`)"
-          :key="tag"
+          v-for="tag in entry.tags"
+          :key="tag.zh"
           class="component-section__tag"
-        >{{ tag }}</span>
+        >{{ localized(tag) }}</span>
       </div>
-      <p class="component-section__desc">{{ t(`registry.entries.${entry.key}.description`) }}</p>
+      <p class="component-section__desc">{{ localized(entry.description) }}</p>
     </div>
 
     <div class="component-section__surface">
       <div class="component-section__demo">
-        <component
-          :is="currentDemo"
+        <DemoStage
+          :entry-key="entry.key"
           :variant-index="activeVariant"
           :variants="entry.variants"
         />
@@ -142,7 +128,7 @@ async function copyCode() {
         <div class="code-viewer__panel">
           <div class="code-viewer__bar">
             <div class="code-viewer__file">
-              <h3 class="code-viewer__title">{{ t(`registry.entries.${entry.key}.name`) }}</h3>
+              <h3 class="code-viewer__title">{{ localized(entry.name) }}</h3>
               <p class="code-viewer__path">components/{{ entry.key }}/{{ componentSource.filename }}</p>
             </div>
             <div class="code-viewer__controls">

@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { nextTick } from 'vue'
-import { locale, setLocale, t, useI18n } from '../index'
+import { locale, setLocale, t, useI18n, localized } from '../index'
+import type { LocalizedText } from '../index'
 import { zh } from '../messages/zh'
 import { en } from '../messages/en'
-import { registryEntries } from '../../registry'
 
 // 模块级单例：每个用例前重置为中文默认态，避免用例间相互污染
 // （happy-dom 下 localStorage 仅挂在 window 上，不暴露为裸全局）
@@ -16,20 +16,34 @@ describe('i18n', () => {
   it('defaults to zh (first visit shows Chinese)', () => {
     expect(locale.value).toBe('zh')
     expect(t('sidebar.brand')).toBe('Yzen-UI for AI-native interfaces.')
-    expect(t('registry.entries.button.name')).toBe('Button 按钮')
+    expect(t('section.viewCode')).toBe('查看代码')
   })
 
   it('switches language reactively without reload', () => {
-    const { locale: l, t: tt } = useI18n()
-    expect(tt('registry.entries.button.name')).toBe('Button 按钮')
+    const { locale: l, t: tt, localized: ll } = useI18n()
+    expect(tt('section.viewCode')).toBe('查看代码')
+    expect(ll({ zh: 'Button 按钮', en: 'Button' })).toBe('Button 按钮')
     setLocale('en')
     expect(l.value).toBe('en')
     // computed messages 响应式：同一 t 调用链立刻返回英文
-    expect(tt('registry.entries.button.name')).toBe('Button')
+    expect(tt('section.viewCode')).toBe('View code')
     expect(tt('sidebar.themeToggle')).toBe('Toggle theme')
-    expect(tt('registry.entries.approval-card.variants.pending')).toBe('Pending')
+    // 注册表双语文案（registry.json 结构）同样响应式
+    expect(ll({ zh: 'Button 按钮', en: 'Button' })).toBe('Button')
+    expect(ll({ zh: '待处理', en: 'Pending' })).toBe('Pending')
     setLocale('zh')
-    expect(tt('registry.entries.button.name')).toBe('Button 按钮')
+    expect(tt('section.viewCode')).toBe('查看代码')
+  })
+
+  it('localized() falls back to zh when the current locale has no value', () => {
+    // 类型层面要求 zh/en 齐全，但运行时仍防御缺失字段（如手工编辑 registry.json 漏字段）
+    const partial = { zh: '仅中文' } as unknown as LocalizedText
+    setLocale('en')
+    expect(localized(partial)).toBe('仅中文')
+    // 未知 locale 值也回退 zh
+    setLocale('fr' as never)
+    expect(localized({ zh: '回退', en: 'Fallback' })).toBe('回退')
+    setLocale('zh')
   })
 
   it('persists the choice in localStorage and syncs <html lang>', () => {
@@ -53,7 +67,7 @@ describe('i18n', () => {
 
   it('returns empty string for a missing key instead of crashing', () => {
     expect(t('no.such.key')).toBe('')
-    expect(t('registry.entries.button.nope')).toBe('')
+    expect(t('section.nope')).toBe('')
   })
 
   it('zh and en message trees are structurally identical (one-to-one)', () => {
@@ -84,28 +98,6 @@ describe('i18n', () => {
     expect(enBlanks).toEqual([])
   })
 
-  it('registry entries ↔ messages stay in sync (every key and variant id translated in both locales)', () => {
-    // 防止未来 registry.json 新增组件/变体但漏翻译：message 缺失时变体名/标题会静默变空
-    type EntryMsg = { variants: Record<string, string> }
-    const zhEntries = zh.registry.entries as Record<string, EntryMsg>
-    const enEntries = en.registry.entries as Record<string, EntryMsg>
-    for (const e of registryEntries) {
-      const zhEntry = zhEntries[e.key]
-      const enEntry = enEntries[e.key]
-      expect(zhEntry, `zh missing entry: ${e.key}`).toBeDefined()
-      expect(enEntry, `en missing entry: ${e.key}`).toBeDefined()
-      for (const v of e.variants) {
-        expect(zhEntry.variants[v.id], `zh missing variant label: ${e.key}/${v.id}`).toBeTruthy()
-        expect(enEntry.variants[v.id], `en missing variant label: ${e.key}/${v.id}`).toBeTruthy()
-      }
-    }
-    // 反向：messages 里的条目都存在于 registry（无孤儿文案）
-    const registryKeys = new Set(registryEntries.map((e) => e.key))
-    for (const key of Object.keys(zh.registry.entries)) {
-      expect(registryKeys.has(key), `orphan message entry: ${key}`).toBe(true)
-    }
-  })
-
   it('degrades gracefully when localStorage is unavailable (privacy mode)', () => {
     const g = globalThis as unknown as { localStorage?: unknown }
     const savedGlobal = g.localStorage
@@ -128,8 +120,8 @@ describe('i18n', () => {
     setLocale('fr' as never)
     expect(locale.value).toBe('fr')
     // messages 计算：非 'en' 一律取 zh（TS 类型虽挡住，运行时仍需兜底）
-    expect(t('registry.entries.button.name')).toBe('Button 按钮')
+    expect(t('section.viewCode')).toBe('查看代码')
     setLocale('zh')
-    expect(t('registry.entries.button.name')).toBe('Button 按钮')
+    expect(t('section.viewCode')).toBe('查看代码')
   })
 })

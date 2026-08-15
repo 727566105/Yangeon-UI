@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'yzen-ui': resolve(__dirname, '../../packages/yzen-ui/src/index.ts'),
+      '@yzen-ui/shared': resolve(__dirname, '../../packages/shared/src/index.ts'),
     },
   },
   test: {
