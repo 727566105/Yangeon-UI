@@ -4,9 +4,9 @@ import DemoStage from '../DemoStage.vue'
 
 // 等待 defineAsyncComponent 解析（import → resolve → render）。
 // 注意：首次动态 import 的 SFC 编译（冷启动）可能耗时数百 ms，固定 sleep 不可靠，
-// 用轮询等待目标元素出现（最多 4s）。
+// 用轮询等待目标元素出现（最多 8s，冷启动 SFC 编译可能较慢）。
 async function waitForElement(wrapper: ReturnType<typeof mount>, selector: string) {
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 80; i++) {
     await flushPromises()
     await new Promise((r) => setTimeout(r, 100))
     if (wrapper.find(selector).exists()) return true
