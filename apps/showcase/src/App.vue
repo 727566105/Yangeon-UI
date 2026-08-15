@@ -1,14 +1,47 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import SiteSidebar from './components/SiteSidebar.vue'
 import ComponentSection from './components/ComponentSection.vue'
-import { registryEntries, componentMap } from './registry'
+import BackToTop from './components/BackToTop.vue'
+import { registryEntriesFor, componentMap } from './registry'
+import { platforms as platformList } from './platforms'
+import { t } from './i18n'
 
 const activeKey = ref<string | null>(null)
 
-// IntersectionObserver 高亮当前区块
+// 平台（端）切换：localStorage 'yz-platform' 持久化；默认「第一个有组件的端」
+function readInitialPlatform(): string {
+  let stored: string | null = null
+  try {
+    stored = localStorage.getItem('yz-platform')
+  } catch {
+    /* 测试/隐私模式下降级 */
+  }
+  if (stored && platformList.some((p) => p.key === stored)) return stored
+  for (const p of platformList) {
+    if (registryEntriesFor(p.key).length > 0) return p.key
+  }
+  return platformList[0]?.key ?? 'desktop'
+}
+
+const activePlatform = ref(readInitialPlatform())
+const visibleEntries = computed(() => registryEntriesFor(activePlatform.value))
+
+function selectPlatform(key: string) {
+  if (activePlatform.value === key) return
+  activePlatform.value = key
+  try {
+    localStorage.setItem('yz-platform', key)
+  } catch {
+    /* ignore */
+  }
+  activeKey.value = null
+}
+
+// IntersectionObserver 高亮当前区块（切端后区块集合变化，重建 observer）
 let observer: IntersectionObserver | null = null
-onMounted(() => {
+function setupObserver() {
+  observer?.disconnect()
   observer = new IntersectionObserver(
     (entries) => {
       const visible = entries.filter((e) => e.isIntersecting)
@@ -18,28 +51,40 @@ onMounted(() => {
     },
     { rootMargin: '-20% 0px -70% 0px' },
   )
-  for (const e of registryEntries) {
+  for (const e of visibleEntries.value) {
     const el = document.getElementById(`section-${e.key}`)
     if (el) observer.observe(el)
   }
-})
+}
+onMounted(setupObserver)
+watch(visibleEntries, setupObserver)
 onUnmounted(() => observer?.disconnect())
 </script>
 
 <template>
   <main class="shell">
     <div class="shell__grid">
-      <SiteSidebar :active-key="activeKey" />
+      <SiteSidebar
+        :active-key="activeKey"
+        :platforms="platformList"
+        :active-platform="activePlatform"
+        :entries="visibleEntries"
+        @select-platform="selectPlatform"
+      />
       <div class="shell__content">
-        <ComponentSection
-          v-for="e in registryEntries"
-          :key="e.key"
-          :entry="e"
-          :component="componentMap[e.key]"
-          :index="e.order"
-        />
+        <template v-if="visibleEntries.length > 0">
+          <ComponentSection
+            v-for="e in visibleEntries"
+            :key="e.key"
+            :entry="e"
+            :component="componentMap[e.key]"
+            :index="e.order"
+          />
+        </template>
+        <p v-else class="shell__empty">{{ t('app.emptyPlatform') }}</p>
       </div>
     </div>
+    <BackToTop />
   </main>
 </template>
 
@@ -59,6 +104,12 @@ onUnmounted(() => observer?.disconnect())
     display: grid;
     grid-template-columns: 288px minmax(0, 1fr);
   }
+}
+.shell__empty {
+  padding: 64px 32px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--yz-ink-3);
 }
 </style>
 

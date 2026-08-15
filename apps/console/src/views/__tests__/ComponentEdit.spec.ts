@@ -17,11 +17,17 @@ const CATEGORIES = [
   { key: 'ai', label: { zh: 'AI 场景', en: 'AI' }, order: 2 },
 ]
 
+const PLATFORMS = [
+  { key: 'mobile', label: { zh: '移动端', en: 'Mobile' }, order: 1 },
+  { key: 'desktop', label: { zh: 'PC 端', en: 'Desktop' }, order: 2 },
+]
+
 const ENTRY: RegistryEntry = {
   key: 'button',
   name: { zh: 'Button 按钮', en: 'Button' },
   description: { zh: '描述', en: 'Description' },
   category: 'basic',
+  platform: 'desktop',
   tags: [{ zh: '基础', en: 'Basic' }],
   order: 1,
   visible: true,
@@ -40,7 +46,7 @@ beforeEach(() => {
 
 describe('ComponentEdit', () => {
   it('renders the metadata form from the entry', () => {
-    const wrapper = mount(ComponentEdit, { props: { entry: ENTRY, categories: CATEGORIES } })
+    const wrapper = mount(ComponentEdit, { props: { entry: ENTRY, categories: CATEGORIES, platforms: PLATFORMS } })
     const inputs = wrapper.findAll('.edit__form input[type="text"]')
     // name zh/en + description zh/en + 2 tag 输入
     expect(inputs.length).toBeGreaterThanOrEqual(4)
@@ -54,7 +60,7 @@ describe('ComponentEdit', () => {
 
   it('shows validation errors instead of saving when metadata is incomplete', async () => {
     mockedSave.mockResolvedValue({ ok: false, errors: ['组件 button 的 name 缺少双语文案'] })
-    const wrapper = mount(ComponentEdit, { props: { entry: ENTRY, categories: CATEGORIES } })
+    const wrapper = mount(ComponentEdit, { props: { entry: ENTRY, categories: CATEGORIES, platforms: PLATFORMS } })
     await wrapper.find('.edit__save').trigger('click')
     await flushPromises()
     expect(wrapper.find('.edit__errors').exists()).toBe(true)
@@ -62,7 +68,7 @@ describe('ComponentEdit', () => {
   })
 
   it('saves the full registry after editing a field', async () => {
-    const wrapper = mount(ComponentEdit, { props: { entry: ENTRY, categories: CATEGORIES } })
+    const wrapper = mount(ComponentEdit, { props: { entry: ENTRY, categories: CATEGORIES, platforms: PLATFORMS } })
     const inputs = wrapper.findAll('.edit__form input[type="text"]')
     await inputs[2].setValue('新描述')
     await wrapper.find('.edit__save').trigger('click')
@@ -75,7 +81,7 @@ describe('ComponentEdit', () => {
   })
 
   it('emits saved after a successful save', async () => {
-    const wrapper = mount(ComponentEdit, { props: { entry: ENTRY, categories: CATEGORIES } })
+    const wrapper = mount(ComponentEdit, { props: { entry: ENTRY, categories: CATEGORIES, platforms: PLATFORMS } })
     await wrapper.find('.edit__save').trigger('click')
     await flushPromises()
     // save() 成功后延迟 600ms 再 emit（让「已保存」toast 可见）
@@ -85,13 +91,16 @@ describe('ComponentEdit', () => {
 
   it('creates a new entry draft when entry is undefined (import flow)', async () => {
     const wrapper = mount(ComponentEdit, {
-      props: { entry: undefined, entryKey: 'my-widget', categories: CATEGORIES },
+      props: { entry: undefined, entryKey: 'my-widget', categories: CATEGORIES, platforms: PLATFORMS },
     })
     const inputs = wrapper.findAll('.edit__form input[type="text"]')
-    // 模板：name 空 + 默认分类 + 默认变体
+    // 模板：name 空 + 默认分类 + 默认端 + 默认变体
     expect((inputs[0].element as HTMLInputElement).value).toBe('')
     expect(wrapper.find('.edit__title').text()).toContain('my-widget')
     expect(wrapper.findAll('.edit__variant').length).toBe(1)
+    // 新建默认端 = 第一个平台（mobile）
+    const selects = wrapper.findAll('.edit__input--sm')
+    expect((selects[1].element as HTMLSelectElement).value).toBe('mobile')
     // 填名称后保存 → fetchRegistry 拿到全量 → 新建条目 order 分配 max+1 后写入
     // （校验要求双语字段齐全：name/description/tags 的 zh+en）
     const values = ['我的组件', 'My Widget', '我的描述', 'My Description', '标签', 'Tag']
@@ -109,4 +118,12 @@ describe('ComponentEdit', () => {
     expect(created?.order).toBe(2) // max(1) + 1
     expect(created?.category).toBe('basic') // 默认取第一个分类
   })
+  it('keeps the platform field intact when saving an edit', async () => {
+    const wrapper = mount(ComponentEdit, { props: { entry: ENTRY, categories: CATEGORIES, platforms: PLATFORMS } })
+    await wrapper.find('.edit__save').trigger('click')
+    await flushPromises()
+    const saved = mockedSave.mock.calls[0][0]
+    expect(saved[0].platform).toBe('desktop')
+  })
 })
+

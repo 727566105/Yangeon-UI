@@ -5,6 +5,10 @@ import type { Messages } from './zh'
 export const en: Messages = {
   app: {
     title: 'Yzen-UI · AI-native UI Kit',
+    emptyPlatform: 'No components on this platform yet',
+  },
+  common: {
+    backToTop: 'Back to top',
   },
   sidebar: {
     themeToggle: 'Toggle theme',
@@ -18,6 +22,7 @@ export const en: Messages = {
     cardTitle: 'Yzen-UI',
     cardSub: 'Build AI-native interfaces · personal component base',
     version: 'v1.0 · MIT',
+    platformAria: 'Switch platform',
   },
   section: {
     copyCode: 'Copy code',

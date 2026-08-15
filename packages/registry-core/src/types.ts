@@ -7,9 +7,20 @@ export interface ComponentSummary {
   nameZh: string
   nameEn: string
   category: string
+  platform: string
   order: number
   visible: boolean
   variantCount: number
+}
+
+/** 平台（端）清单精简项（供 list_platforms / yz platforms list） */
+export interface PlatformSummary {
+  key: string
+  labelZh: string
+  labelEn: string
+  order: number
+  /** 该平台下可见组件数 */
+  componentCount: number
 }
 
 /** 组件详情（get_component 返回全量） */
@@ -23,6 +34,7 @@ export interface ComponentDetail extends RegistryEntry {
 /** 组件清单筛选参数 */
 export interface ComponentFilter {
   category?: string
+  platform?: string
   keyword?: string
   limit?: number
 }
@@ -48,6 +60,7 @@ export interface ProjectInfo {
   hasDocs: boolean
   componentCount: number
   categoryCount: number
+  platformCount: number
 }
 
 /** 项目文档条目 */

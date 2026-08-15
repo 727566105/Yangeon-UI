@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { validateRegistry, validateCategories } from '../validate'
-import type { RegistryCategory, RegistryEntry } from '../types'
+import { validateRegistry, validateCategories, validatePlatforms } from '../validate'
+import type { Platform, RegistryCategory, RegistryEntry } from '../types'
 
 // 合法样例（Button 的双语结构）
 const entry = (over: Partial<RegistryEntry> = {}): RegistryEntry => ({
@@ -8,6 +8,7 @@ const entry = (over: Partial<RegistryEntry> = {}): RegistryEntry => ({
   name: { zh: 'Button 按钮', en: 'Button' },
   description: { zh: '描述', en: 'Description' },
   category: 'basic',
+  platform: 'desktop',
   tags: [{ zh: '基础', en: 'Basic' }],
   order: 1,
   visible: true,
@@ -19,6 +20,13 @@ const entry = (over: Partial<RegistryEntry> = {}): RegistryEntry => ({
 const category = (over: Partial<RegistryCategory> = {}): RegistryCategory => ({
   key: 'basic',
   label: { zh: '基础组件', en: 'Basic' },
+  order: 1,
+  ...over,
+})
+
+const platform = (over: Partial<Platform> = {}): Platform => ({
+  key: 'desktop',
+  label: { zh: 'PC 端', en: 'Desktop' },
   order: 1,
   ...over,
 })
@@ -100,5 +108,46 @@ describe('validateRegistry with categories', () => {
 
   it('skips category check when not provided (backward compatible)', () => {
     expect(validateRegistry([entry({ category: 'anything' })], ['button']).ok).toBe(true)
+  })
+})
+
+describe('validateRegistry with platforms', () => {
+  it('accepts an entry whose platform exists in the platform list', () => {
+    const platforms = [platform(), platform({ key: 'mobile', label: { zh: '移动端', en: 'Mobile' }, order: 2 })]
+    expect(validateRegistry([entry()], ['button'], undefined, platforms).ok).toBe(true)
+    expect(validateRegistry([entry({ platform: 'mobile' })], ['button'], undefined, platforms).ok).toBe(true)
+  })
+
+  it('rejects an entry referencing an unknown platform', () => {
+    const platforms = [platform()]
+    expect(validateRegistry([entry({ platform: 'tablet' })], ['button'], undefined, platforms).ok).toBe(false)
+  })
+
+  it('rejects an entry missing the platform field', () => {
+    const { platform: _omit, ...withoutPlatform } = entry()
+    expect(validateRegistry([withoutPlatform as RegistryEntry], ['button']).ok).toBe(false)
+  })
+
+  it('skips platform check when not provided (backward compatible)', () => {
+    expect(validateRegistry([entry({ platform: 'anything' })], ['button']).ok).toBe(true)
+  })
+})
+
+describe('validatePlatforms', () => {
+  it('accepts a valid platform list', () => {
+    expect(validatePlatforms([platform(), platform({ key: 'mobile', order: 2 })]).ok).toBe(true)
+  })
+
+  it('detects duplicate and malformed keys', () => {
+    expect(validatePlatforms([platform(), platform()]).ok).toBe(false)
+    expect(validatePlatforms([platform({ key: '../evil' })]).ok).toBe(false)
+    expect(validatePlatforms([platform({ key: '大写' })]).ok).toBe(false)
+  })
+
+  it('detects missing bilingual label and invalid order', () => {
+    expect(validatePlatforms([platform({ label: { zh: '', en: 'Desktop' } })]).ok).toBe(false)
+    expect(validatePlatforms([platform({ label: { zh: 'PC 端', en: '' } })]).ok).toBe(false)
+    expect(validatePlatforms([platform({ order: 1.5 })]).ok).toBe(false)
+    expect(validatePlatforms([platform({ order: 1 }), platform({ key: 'mobile', order: 1 })]).ok).toBe(false)
   })
 })

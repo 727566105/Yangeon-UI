@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { importComponent, fetchCategories, fetchRegistry, saveRegistry } from '../api'
-import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared'
+import { importComponent, fetchCategories, fetchPlatforms, fetchRegistry, saveRegistry } from '../api'
+import type { Platform, RegistryCategory, RegistryEntry } from '@yzen-ui/shared'
 import { useI18n } from '../i18n'
 import SandboxPreview from '../components/SandboxPreview.vue'
 
@@ -17,20 +17,25 @@ const meta = ref({
   descZh: '',
   descEn: '',
   category: '',
+  platform: '',
   tagZh: '',
   tagEn: '',
 })
 const categories = ref<RegistryCategory[]>([])
+const platforms = ref<Platform[]>([])
 
 const status = ref<'idle' | 'busy' | 'ok' | 'error'>('idle')
 const message = ref('')
 
 onMounted(async () => {
   try {
-    categories.value = await fetchCategories()
-    meta.value.category = categories.value[0]?.key ?? 'basic'
+    const [cats, plats] = await Promise.all([fetchCategories(), fetchPlatforms()])
+    categories.value = cats
+    platforms.value = plats
+    meta.value.category = cats[0]?.key ?? 'basic'
+    meta.value.platform = plats[0]?.key ?? 'desktop'
   } catch {
-    /* 分类加载失败时用默认值兜底 */
+    /* 分类/端加载失败时用默认值兜底 */
   }
 })
 
@@ -98,13 +103,14 @@ async function doImport() {
       message.value = created.error
       return
     }
-    // 写入 registry：新条目（order = max + 1，默认变体，分类/标签/文案来自表单）
+    // 写入 registry：新条目（order = max + 1，默认变体，分类/端/标签/文案来自表单）
     const all = await fetchRegistry()
     const entry: RegistryEntry = {
       key: k,
       name: { zh: meta.value.nameZh.trim(), en: meta.value.nameEn.trim() },
       description: { zh: meta.value.descZh.trim(), en: meta.value.descEn.trim() },
       category: meta.value.category,
+      platform: meta.value.platform,
       tags: [{ zh: meta.value.tagZh.trim(), en: meta.value.tagEn.trim() }],
       order: Math.max(0, ...all.map((e) => e.order)) + 1,
       visible: true,
@@ -148,6 +154,12 @@ function done() {
               <span class="wizard__label">{{ t('edit.category') }}</span>
               <select v-model="meta.category" class="wizard__input">
                 <option v-for="c in categories" :key="c.key" :value="c.key">{{ localized(c.label) }}</option>
+              </select>
+            </label>
+            <label class="wizard__field">
+              <span class="wizard__label">{{ t('edit.platform') }}</span>
+              <select v-model="meta.platform" class="wizard__input">
+                <option v-for="p in platforms" :key="p.key" :value="p.key">{{ localized(p.label) }}</option>
               </select>
             </label>
             <label class="wizard__field">

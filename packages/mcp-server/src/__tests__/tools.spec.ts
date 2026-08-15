@@ -28,6 +28,7 @@ beforeEach(() => {
         name: { zh: 'Button 按钮', en: 'Button' },
         description: { zh: '按钮', en: 'A button' },
         category: 'basic',
+        platform: 'desktop',
         tags: [{ zh: '基础', en: 'Basic' }],
         order: 1,
         visible: true,
@@ -39,6 +40,13 @@ beforeEach(() => {
   writeFileSync(
     join(root, 'registry/categories.json'),
     JSON.stringify([{ key: 'basic', label: { zh: '基础组件', en: 'Basic' }, order: 1 }]),
+  )
+  writeFileSync(
+    join(root, 'registry/platforms.json'),
+    JSON.stringify([
+      { key: 'mobile', label: { zh: '移动端', en: 'Mobile' }, order: 1 },
+      { key: 'desktop', label: { zh: 'PC 端', en: 'Desktop' }, order: 2 },
+    ]),
   )
   writeFileSync(
     join(root, 'packages/yzen-ui/src/components/button/Button.vue'),
@@ -55,12 +63,13 @@ afterEach(() => {
 })
 
 describe('MCP tools', () => {
-  it('registers all 9 read-only tools on the server', () => {
-    expect(tools).toHaveLength(9)
+  it('registers all 10 read-only tools on the server', () => {
+    expect(tools).toHaveLength(10)
     const names = tools.map((t) => t.name)
     expect(names).toEqual([
       'get_project_info',
       'list_components',
+      'list_platforms',
       'get_component',
       'get_component_source',
       'get_component_demo',
@@ -83,6 +92,17 @@ describe('MCP tools', () => {
     expect(JSON.parse(call('list_components'))).toHaveLength(1)
     expect(JSON.parse(call('list_components', { category: 'ai' }))).toHaveLength(0)
     expect(JSON.parse(call('list_components', { keyword: 'button' }))).toHaveLength(1)
+    // 平台筛选：desktop 命中、mobile 空
+    expect(JSON.parse(call('list_components', { platform: 'desktop' }))).toHaveLength(1)
+    expect(JSON.parse(call('list_components', { platform: 'mobile' }))).toHaveLength(0)
+  })
+
+  it('list_platforms returns platform summaries with component counts', () => {
+    const list = JSON.parse(call('list_platforms')) as Array<{ key: string; componentCount: number }>
+    expect(list).toEqual([
+      { key: 'mobile', labelZh: '移动端', labelEn: 'Mobile', order: 1, componentCount: 0 },
+      { key: 'desktop', labelZh: 'PC 端', labelEn: 'Desktop', order: 2, componentCount: 1 },
+    ])
   })
 
   it('get_component / source / demo / variants', () => {
@@ -118,6 +138,8 @@ describe('MCP tool argument guards', () => {
     expect(call('list_components', { limit: 'abc' as never })).toContain('参数无效')
     // limit 传负数
     expect(call('list_components', { limit: -1 })).toContain('参数无效')
+    // platform 传数字（非字符串）
+    expect(call('list_components', { platform: 123 as never })).toContain('参数无效')
   })
 
   it('accepts valid arguments', () => {

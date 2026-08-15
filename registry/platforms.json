@@ -1,0 +1,4 @@
+[
+  { "key": "mobile", "label": { "zh": "移动端", "en": "Mobile" }, "order": 1 },
+  { "key": "desktop", "label": { "zh": "PC 端", "en": "Desktop" }, "order": 2 }
+]

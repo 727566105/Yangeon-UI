@@ -3,9 +3,16 @@ import { ref } from 'vue'
 import { useGroups } from '../groups'
 import { categoryMap } from '../categories'
 import { useI18n } from '../i18n'
+import type { Platform, RegistryEntry } from '@yzen-ui/shared'
 
-defineProps<{ activeKey: string | null }>()
-const groupByCategory = useGroups()
+const props = defineProps<{
+  activeKey: string | null
+  platforms: Platform[]
+  activePlatform: string
+  entries: RegistryEntry[]
+}>()
+defineEmits<{ (e: 'select-platform', key: string): void }>()
+const groupByCategory = useGroups(() => props.entries)
 const { t, locale, setLocale, localized } = useI18n()
 
 // 胶囊主题切换（beautifului 同款：滑块位移 + 双图标位）
@@ -89,6 +96,19 @@ function onNavClick(event: MouseEvent, key: string) {
         </div>
       </div>
       <h1 class="sidebar__title">{{ t('sidebar.brand') }}</h1>
+
+      <!-- 平台（端）切换：动态端数胶囊（激活项浮起，VariantSwitcher 模式） -->
+      <div class="platform-switch" role="group" :aria-label="t('sidebar.platformAria')">
+        <button
+          v-for="p in platforms"
+          :key="p.key"
+          type="button"
+          class="platform-switch__item"
+          :class="{ 'platform-switch__item--active': activePlatform === p.key }"
+          :aria-pressed="activePlatform === p.key"
+          @click="$emit('select-platform', p.key)"
+        >{{ localized(p.label) }}</button>
+      </div>
     </div>
 
     <div class="sidebar__nav-wrap">
@@ -265,6 +285,35 @@ function onNavClick(event: MouseEvent, key: string) {
 }
 @media (min-width: 1024px) {
   .sidebar__title { margin-top: clamp(1.5rem, 5vh, 3rem); }
+}
+
+/* 平台（端）切换胶囊：动态端数，激活项浮起（同 VariantSwitcher 模式） */
+.platform-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 16px;
+  padding: 2px;
+  border-radius: 99px;
+  background: var(--yz-field);
+  box-shadow: 0 0 0 1px var(--yz-line);
+}
+.platform-switch__item {
+  border: none;
+  background: transparent;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--yz-ink-3);
+  cursor: pointer;
+  transition: background-color 150ms var(--yz-ease-out-strong), color 150ms var(--yz-ease-out-strong);
+}
+.platform-switch__item:hover { color: var(--yz-ink); }
+.platform-switch__item--active {
+  background: var(--yz-surface);
+  color: var(--yz-ink);
+  box-shadow: 0 0 0 1px var(--yz-line-strong), 0 1px 2px #1018280d;
 }
 
 /* 导航区：虚线顶部分隔 + 内部滚动（隐藏滚动条 + 底部渐隐） */

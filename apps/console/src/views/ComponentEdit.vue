@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { DemoStage, validateRegistry } from '@yzen-ui/shared'
-import type { RegistryCategory, RegistryEntry, Variant, LocalizedText } from '@yzen-ui/shared'
+import type { Platform, RegistryCategory, RegistryEntry, Variant, LocalizedText } from '@yzen-ui/shared'
 import { saveRegistry, fetchRegistry } from '../api'
 import { useI18n } from '../i18n'
 
 const props = defineProps<{
   entry: RegistryEntry | undefined
   categories: RegistryCategory[]
+  platforms: Platform[]
   /** 新建模式下的组件 key（entry 为 undefined 时使用） */
   entryKey?: string
 }>()
@@ -22,6 +23,7 @@ function createDraft(key: string): RegistryEntry {
     name: { zh: '', en: '' },
     description: { zh: '', en: '' },
     category: props.categories[0]?.key ?? 'basic',
+    platform: props.platforms[0]?.key ?? 'desktop',
     tags: [{ zh: '', en: '' }],
     order: 0, // 保存时按 max+1 分配
     visible: true,
@@ -192,10 +194,13 @@ async function save() {
         </section>
 
         <section class="edit__section">
-          <h3 class="edit__section-title">{{ t('edit.category') }} / {{ t('edit.order') }} / {{ t('edit.visible') }}</h3>
+          <h3 class="edit__section-title">{{ t('edit.category') }} / {{ t('edit.platform') }} / {{ t('edit.order') }} / {{ t('edit.visible') }}</h3>
           <div class="edit__row">
             <select v-model="draft.category" class="edit__input edit__input--sm">
               <option v-for="c in categories" :key="c.key" :value="c.key">{{ localized(c.label) }}</option>
+            </select>
+            <select v-model="draft.platform" class="edit__input edit__input--sm">
+              <option v-for="p in platforms" :key="p.key" :value="p.key">{{ localized(p.label) }}</option>
             </select>
             <input v-model.number="draft.order" class="edit__input edit__input--sm" type="number" min="1" />
             <label class="edit__check">

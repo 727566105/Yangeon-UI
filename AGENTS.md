@@ -4,8 +4,8 @@
 
 **Yzen-UI**：AI 科技风个人组件库（Vue 3 + TS + SCSS + CSS Variables，pnpm monorepo）。产品 = **组件库 + Showcase 展示站 + Console 管理端 + 开发消费接入（CLI/MCP）**：
 - 展示站**忠实复刻 beautifului.dev**（视觉 token 实测自其线上 CSS，19 个 AI 组件移植自其开源组件），样式与交互细节以 beautifului.dev 为对齐基准，支持中英文切换
-- Console 管理端：本地 Web 应用（密码登录，`YZ_CONSOLE_PASSWORD` 环境变量，默认 yzenui），维护组件注册表/分类/收录
-- CLI（`yz` 命令）与 MCP（9 个只读 tools）：开发者与 AI 编程工具消费组件库内容与规范，零缓存实时跟随组件库扩展
+- Console 管理端：本地 Web 应用（密码登录，`YZ_CONSOLE_PASSWORD` 环境变量，默认 123456），维护组件注册表/分类/收录
+- CLI（`yz` 命令）与 MCP（10 个只读 tools）：开发者与 AI 编程工具消费组件库内容与规范，零缓存实时跟随组件库扩展
 
 ## 协作规则（每次会话生效）
 
@@ -24,18 +24,19 @@
 ## 目录结构
 
 ```
-packages/yzen-ui/          # 组件库（npm 包名 yzen-ui，25 个组件：6 basic + 19 AI）
+packages/yzen-ui/          # 组件库（npm 包名 yzen-ui，26 个组件：6 basic + 20 AI）
   src/theme/               # tokens-light.scss（浅色默认）/ tokens-dark.scss（html[data-theme="dark"]）
   src/styles/              # variables.scss（$yz-* 映射层）/ animations.scss（全局 keyframes）/ base.scss
   src/components/          # 每组件目录：<Name>.vue + index.ts + demo.vue + __tests__/<Name>.spec.ts
 packages/shared/           # 双端共享契约：类型 + validateRegistry/validateCategories + DemoStage 预览容器
 packages/registry-core/    # 项目感知层（CLI/MCP 共用）：组件/源码/token/文档读取，零缓存实时
 packages/cli/              # yz 命令（Node 22.18+ 原生 TS 直跑）：components/tokens/style-guide/info/docs/init
-packages/mcp-server/       # MCP stdio server（9 个只读 tools，@modelcontextprotocol/server v2）
-apps/showcase/             # 展示站（Vite 应用）：锚点导航/registry 驱动区块/变体切换/复制+查看代码/中英切换
+packages/mcp-server/       # MCP stdio server（10 个只读 tools，@modelcontextprotocol/server v2）
+apps/showcase/             # 展示站（Vite 应用）：锚点导航/registry 驱动区块/变体切换/复制+查看代码/中英切换/平台（端）全局切换
 apps/console/              # 管理端（Vite 应用 + dev server 中间件本地 API）：组件/分类/收录/沙箱预览/密码登录
-registry/registry.json     # 组件注册表单一真源（双语文案：name/description/tags/variant label 为 {zh,en}）
+registry/registry.json     # 组件注册表单一真源（双语文案：name/description/tags/variant label 为 {zh,en}；platform 字段引用平台 key）
 registry/categories.json   # 分类清单（key + 双语 label + order，Console 可增删改排序）
+registry/platforms.json    # 平台（端）清单（key + 双语 label + order，Console 可增删改排序，展示站全局切换）
 docs/                      # PRD-v2.0.md（产品需求）、research/（可行性报告 + CLI/MCP 调研）、superpowers/plans/
 ```
 
@@ -45,7 +46,7 @@ docs/                      # PRD-v2.0.md（产品需求）、research/（可行�
 pnpm install             # 安装依赖（pnpm 10，workspace）
 pnpm dev:showcase        # 展示站 dev（http://localhost:5173）
 pnpm dev:console         # 管理端 dev（http://localhost:5174，本地 API 仅本机/局域网）
-pnpm test                # 全量测试（七包 265：shared 15 + yzen-ui 129 + showcase 37 + console 46 + registry-core 17 + cli 11 + mcp 10）
+pnpm test                # 全量测试（七包 312：shared 22 + yzen-ui 136 + showcase 49 + console 58 + registry-core 22 + cli 14 + mcp 11）
 pnpm -F yzen-ui test -- src/components/<key>   # 单组件测试
 pnpm build:yzen-ui       # 组件库构建（ESM + CSS + dist/types）
 pnpm build:showcase      # 展示站构建
@@ -63,9 +64,9 @@ node packages/mcp-server/bin/yz-mcp.mjs   # MCP stdio server（Claude Desktop/Cu
 - **动画**：用全局 `animations.scss` 的 `yz-*` keyframes；所有动效加 `@media (prefers-reduced-motion: reduce)` 降级
 - **受控组件铁律**：内部修改状态后必须同步 `emit('update:xxx')`；折叠动画 `grid-template-rows 0fr/1fr` + transition 常驻基础类（防瞬跳）
 - **间距/数值与源像素级一致**（对照 beautifului HTML 的 gap-*/px-*/size-*）；空数据/边界必须有守卫
-- **registry 双语契约**：name/description/tags/variant label 为 `{zh,en}` 结构，Console 编辑、展示站/CLI/MCP 读取；validateRegistry 校验双语非空
+- **registry 双语契约**：name/description/tags/variant label 为 `{zh,en}` 结构，Console 编辑、展示站/CLI/MCP 读取；validateRegistry 校验双语非空 + platform 必须存在于 platforms.json（validatePlatforms 校验平台表本身）
 - **七包依赖方向**：yzen-ui（组件）→ shared（契约）→ registry-core（感知层）→ cli/mcp-server（消费）；console/showcase 消费 shared + yzen-ui。registry-core/shared 内部相对导入必须带 `.ts` 扩展（Node type stripping 要求，tsconfig 已开 allowImportingTsExtensions）
-- **Console 鉴权**：API 除 /api/login 外全部要求 Bearer token（内存 Set，dev 重启失效）；密码 `YZ_CONSOLE_PASSWORD`（默认 yzenui 启动有警告）
+- **Console 鉴权**：API 除 /api/login 外全部要求 Bearer token（内存 Set，dev 重启失效）；密码 `YZ_CONSOLE_PASSWORD`（默认 123456 启动有警告）
 
 ## 已知陷阱（重要）
 

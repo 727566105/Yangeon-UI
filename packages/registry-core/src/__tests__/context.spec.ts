@@ -21,6 +21,7 @@ function makeEntry(i: number, over: Partial<RegistryEntry> = {}): RegistryEntry 
     name: { zh: `组件 ${i}`, en: `Component ${i}` },
     description: { zh: `描述 ${i}`, en: `Description ${i}` },
     category: i % 2 === 0 ? 'ai' : 'basic',
+    platform: 'desktop',
     tags: [{ zh: '标签', en: 'Tag' }],
     order: i,
     visible: i !== 100,
@@ -39,6 +40,13 @@ beforeEach(() => {
   // monorepo 锚点（findRepoRoot 依赖）
   writeFileSync(join(root, 'pnpm-workspace.yaml'), 'packages: []\n')
   writeFileSync(join(root, 'registry/categories.json'), JSON.stringify(CATEGORIES))
+  writeFileSync(
+    join(root, 'registry/platforms.json'),
+    JSON.stringify([
+      { key: 'mobile', label: { zh: '移动端', en: 'Mobile' }, order: 1 },
+      { key: 'desktop', label: { zh: 'PC 端', en: 'Desktop' }, order: 2 },
+    ]),
+  )
   writeFileSync(
     join(root, 'registry/registry.json'),
     JSON.stringify([makeEntry(1)], null, 2),
@@ -286,3 +294,76 @@ describe('ProjectContext coverage', () => {
     expect(limitMs).toBeLessThan(200)
   })
 })
+
+describe('ProjectContext platforms', () => {
+  it('filters components by platform', () => {
+    writeFileSync(
+      join(root, 'registry/registry.json'),
+      JSON.stringify([
+        makeEntry(1, { platform: 'desktop' }),
+        makeEntry(2, { platform: 'mobile' }),
+        makeEntry(3, { platform: 'mobile' }),
+      ]),
+    )
+    const ctx = createProjectContext(root)
+    const mobile = ctx.listComponents({ platform: 'mobile' })
+    expect(mobile).toHaveLength(2)
+    expect(mobile.every((c) => c.platform === 'mobile')).toBe(true)
+    const desktop = ctx.listComponents({ platform: 'desktop' })
+    expect(desktop.map((c) => c.key)).toEqual(['button'])
+  })
+
+  it('lists platforms with bilingual labels, order and component counts', () => {
+    writeFileSync(
+      join(root, 'registry/registry.json'),
+      JSON.stringify([
+        makeEntry(1, { platform: 'desktop' }),
+        makeEntry(2, { platform: 'mobile', visible: false }),
+      ]),
+    )
+    const ctx = createProjectContext(root)
+    const list = ctx.listPlatforms()
+    expect(list).toEqual([
+      { key: 'mobile', labelZh: '移动端', labelEn: 'Mobile', order: 1, componentCount: 0 },
+      { key: 'desktop', labelZh: 'PC 端', labelEn: 'Desktop', order: 2, componentCount: 1 },
+    ])
+    // getProjectInfo 带平台数
+    expect(ctx.getProjectInfo().platformCount).toBe(2)
+  })
+
+  it('degrades gracefully when platforms.json is missing or corrupted', () => {
+    rmSync(join(root, 'registry/platforms.json'))
+    const ctx = createProjectContext(root)
+    expect(ctx.listPlatforms()).toEqual([])
+    expect(ctx.getProjectInfo().platformCount).toBe(0)
+    writeFileSync(join(root, 'registry/platforms.json'), '{ broken')
+    expect(ctx.listPlatforms()).toEqual([])
+    // 平台缺失不影响组件读取
+    expect(ctx.listComponents().length).toBeGreaterThan(0)
+  })
+  it('combines platform with keyword filters', () => {
+    writeFileSync(
+      join(root, 'registry/registry.json'),
+      JSON.stringify([
+        makeEntry(1, { platform: 'desktop', key: 'button' }),
+        makeEntry(2, { platform: 'mobile', key: 'm-card' }),
+      ]),
+    )
+    const ctx = createProjectContext(root)
+    expect(ctx.listComponents({ platform: 'mobile', keyword: 'm-card' })).toHaveLength(1)
+    expect(ctx.listComponents({ platform: 'mobile', keyword: 'button' })).toHaveLength(0)
+  })
+
+  it('degrades on dirty data: entries missing the platform field', () => {
+    const { platform: _omit, ...noPlatform } = makeEntry(1)
+    writeFileSync(join(root, 'registry/registry.json'), JSON.stringify([noPlatform]))
+    const ctx = createProjectContext(root)
+    // listComponents 输出 platform 为 undefined（不崩溃）
+    const list = ctx.listComponents()
+    expect(list[0].platform).toBeUndefined()
+    // listPlatforms 不把缺 platform 的组件计入任何平台（计数 0，不崩溃）
+    const plats = ctx.listPlatforms()
+    expect(plats.every((p) => p.componentCount === 0)).toBe(true)
+  })
+})
+

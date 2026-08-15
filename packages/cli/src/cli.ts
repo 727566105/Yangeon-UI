@@ -29,12 +29,14 @@ export function run(argv: string[], opts: RunOptions = {}): void {
     .command('list')
     .description('组件清单（精简字段；支持筛选）')
     .option('--category <key>', '按分类筛选（如 ai）')
+    .option('--platform <key>', '按平台（端）筛选（如 mobile / desktop）')
     .option('--keyword <text>', '按 key/名称/标签关键词筛选')
     .option('--limit <n>', '限制条数', parseInt)
     .option('--full', '输出全量字段（含描述/标签/变体）')
     .action((cmdOpts) => {
       const filter: ComponentFilter = {
         category: cmdOpts.category,
+        platform: cmdOpts.platform,
         keyword: cmdOpts.keyword,
         limit: cmdOpts.limit,
       }
@@ -72,6 +74,15 @@ export function run(argv: string[], opts: RunOptions = {}): void {
         return
       }
       out(JSON.stringify(detail, null, 2))
+    })
+
+  // yz platforms list（平台（端）清单）
+  const platforms = program.command('platforms').description('平台（端）查询')
+  platforms
+    .command('list')
+    .description('平台（端）清单：key + 双语 label + 每平台组件数')
+    .action(() => {
+      out(JSON.stringify(ctx.listPlatforms(), null, 2))
     })
 
   // yz tokens [--json]
@@ -112,7 +123,7 @@ export function run(argv: string[], opts: RunOptions = {}): void {
       out(`仓库根: ${info.root}`)
       out(`apps: ${info.apps.join(', ') || '(无)'}`)
       out(`packages: ${info.packages.join(', ') || '(无)'}`)
-      out(`组件数: ${info.componentCount} | 分类数: ${info.categoryCount}`)
+      out(`组件数: ${info.componentCount} | 分类数: ${info.categoryCount} | 平台数: ${info.platformCount}`)
       out(`registry: ${info.hasRegistry ? '✓' : '✗'} | docs: ${info.hasDocs ? '✓' : '✗'}`)
     })
 

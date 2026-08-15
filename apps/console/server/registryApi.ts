@@ -6,8 +6,8 @@ import { readFileSync, writeFileSync, readdirSync, mkdirSync, renameSync, exists
 import { join, resolve } from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
-import { validateRegistry, validateCategories } from '@yzen-ui/shared/validate'
-import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared/types'
+import { validateRegistry, validateCategories, validatePlatforms } from '@yzen-ui/shared/validate'
+import type { Platform, RegistryCategory, RegistryEntry } from '@yzen-ui/shared/types'
 
 // 仓库根：apps/console/server/registryApi.ts -> 仓库根 3 级
 const REPO_ROOT = resolve(__dirname, '../../..')
@@ -27,12 +27,15 @@ export interface RegistryApi {
   writeCategories(
     categories: RegistryCategory[],
   ): { ok: true } | { ok: false; errors: string[] }
+  readPlatforms(): Platform[]
+  writePlatforms(platforms: Platform[]): { ok: true } | { ok: false; errors: string[] }
 }
 
 /** 工厂：注入仓库根路径（测试用临时目录；默认真实仓库） */
 export function createRegistryApi(root: string = REPO_ROOT): RegistryApi {
   const REGISTRY_PATH = join(root, 'registry/registry.json')
   const CATEGORIES_PATH = join(root, 'registry/categories.json')
+  const PLATFORMS_PATH = join(root, 'registry/platforms.json')
   const COMPONENTS_DIR = join(root, 'packages/yzen-ui/src/components')
 
   function readRegistry(): RegistryEntry[] {
@@ -41,6 +44,10 @@ export function createRegistryApi(root: string = REPO_ROOT): RegistryApi {
 
   function readCategories(): RegistryCategory[] {
     return JSON.parse(readFileSync(CATEGORIES_PATH, 'utf8')) as RegistryCategory[]
+  }
+
+  function readPlatforms(): Platform[] {
+    return JSON.parse(readFileSync(PLATFORMS_PATH, 'utf8')) as Platform[]
   }
 
   function listComponentKeys(): string[] {
@@ -54,12 +61,39 @@ export function createRegistryApi(root: string = REPO_ROOT): RegistryApi {
   function writeRegistry(
     entries: RegistryEntry[],
   ): { ok: true } | { ok: false; errors: string[] } {
-    // 服务端校验：组件存在性 + 分类存在性（防组件引用不存在分类）
-    const result = validateRegistry(entries, listComponentKeys(), readCategories())
+    // 服务端校验：组件存在性 + 分类/平台存在性（防组件引用不存在的分类/平台）
+    const result = validateRegistry(entries, listComponentKeys(), readCategories(), readPlatforms())
     if (!result.ok) return result
     const tmp = `${REGISTRY_PATH}.tmp`
     writeFileSync(tmp, JSON.stringify(entries, null, 2) + '\n', 'utf8')
     renameSync(tmp, REGISTRY_PATH)
+    return { ok: true }
+  }
+
+  /** 平台写入：validatePlatforms + 使用中的平台禁止删除 + 原子写盘 */
+  function writePlatforms(
+    platforms: Platform[],
+  ): { ok: true } | { ok: false; errors: string[] } {
+    const result = validatePlatforms(platforms)
+    if (!result.ok) return result
+    // 统计各平台的组件使用数，被删除且有使用的平台拒绝
+    const usage = new Map<string, number>()
+    for (const e of readRegistry()) {
+      usage.set(e.platform, (usage.get(e.platform) ?? 0) + 1)
+    }
+    const newKeys = new Set(platforms.map((p) => p.key))
+    const inUseDeleted = [...usage.entries()].filter(
+      ([key, count]) => count > 0 && !newKeys.has(key),
+    )
+    if (inUseDeleted.length) {
+      return {
+        ok: false,
+        errors: inUseDeleted.map(([key, count]) => `平台 ${key} 正被 ${count} 个组件使用，不能删除`),
+      }
+    }
+    const tmp = `${PLATFORMS_PATH}.tmp`
+    writeFileSync(tmp, JSON.stringify(platforms, null, 2) + '\n', 'utf8')
+    renameSync(tmp, PLATFORMS_PATH)
     return { ok: true }
   }
 
@@ -130,7 +164,16 @@ const active = computed(() => props.variants?.[props.variantIndex ?? 0]?.props ?
     return { ok: true, name }
   }
 
-  return { readRegistry, listComponentKeys, writeRegistry, importComponent, readCategories, writeCategories }
+  return {
+    readRegistry,
+    listComponentKeys,
+    writeRegistry,
+    importComponent,
+    readCategories,
+    writeCategories,
+    readPlatforms,
+    writePlatforms,
+  }
 }
 
 /** key 转 PascalCase 组件名：'my-widget' -> 'MyWidget' */
@@ -166,7 +209,7 @@ type NextFn = (err?: unknown) => void
 
 // 密码来源：环境变量 YZ_CONSOLE_PASSWORD；未配置时用默认值并在启动时打印提醒。
 // token 仅存内存（dev server 重启即失效，需重新登录）。
-const DEFAULT_PASSWORD = 'yzenui'
+const DEFAULT_PASSWORD = '123456'
 export function resolvePassword(): string {
   return process.env.YZ_CONSOLE_PASSWORD?.trim() || DEFAULT_PASSWORD
 }
@@ -259,6 +302,16 @@ export function registryApiMiddleware(api: RegistryApi = defaultApi): (req: Inco
       if (req.method === 'PUT' && url === '/api/categories') {
         const body = JSON.parse((await readBody(req)) || '[]') as RegistryCategory[]
         const result = api.writeCategories(body)
+        sendJson(res, result.ok ? 200 : 422, result)
+        return
+      }
+      if (req.method === 'GET' && url === '/api/platforms') {
+        sendJson(res, 200, api.readPlatforms())
+        return
+      }
+      if (req.method === 'PUT' && url === '/api/platforms') {
+        const body = JSON.parse((await readBody(req)) || '[]') as Platform[]
+        const result = api.writePlatforms(body)
         sendJson(res, result.ok ? 200 : 422, result)
         return
       }

@@ -5,6 +5,10 @@
 export const zh = {
   app: {
     title: 'Yzen-UI · AI 科技风组件库',
+    emptyPlatform: '该端暂无组件',
+  },
+  common: {
+    backToTop: '返回顶部',
   },
   sidebar: {
     themeToggle: '主题切换',
@@ -18,6 +22,7 @@ export const zh = {
     cardTitle: 'Yzen-UI',
     cardSub: 'Build AI-native interfaces · 个人组件基座',
     version: 'v1.0 · MIT',
+    platformAria: '切换平台',
   },
   section: {
     copyCode: '复制代码',

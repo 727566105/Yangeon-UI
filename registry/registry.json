@@ -65,7 +65,8 @@
           "loading": true
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "input",
@@ -125,7 +126,8 @@
           "clearable": true
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "card",
@@ -190,7 +192,8 @@
           "hoverable": true
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "icon",
@@ -249,7 +252,8 @@
           "size": 32
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "layout",
@@ -294,7 +298,8 @@
           "gutter": 16
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "typography",
@@ -349,7 +354,8 @@
           "type": "accent"
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "ai-loading",
@@ -406,7 +412,8 @@
           "variant": "orbit"
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "code-block",
@@ -463,7 +470,8 @@
           "streaming": false
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "thinking",
@@ -510,7 +518,8 @@
           "expanded": true
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "tool-chips",
@@ -555,7 +564,8 @@
           "expanded": false
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "prompt-bar",
@@ -611,7 +621,8 @@
           "shape": "pill"
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "streaming-text",
@@ -667,7 +678,8 @@
           "streaming": false
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "chat-composer",
@@ -722,7 +734,8 @@
           "replyText": null
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "approval-card",
@@ -770,7 +783,8 @@
           "selected": 0
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "task-rows",
@@ -817,7 +831,8 @@
           "variant": "list"
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "search",
@@ -864,7 +879,8 @@
           "modelValue": "zzz"
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "context-cards",
@@ -951,7 +967,8 @@
           "animated": false
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "recommendation-card",
@@ -1007,7 +1024,8 @@
           "confidenceLabel": "Low confidence"
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "insight-cards",
@@ -1273,7 +1291,8 @@
           ]
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "diff-table",
@@ -1329,7 +1348,8 @@
           "proposed": null
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "filter-table",
@@ -1384,7 +1404,8 @@
           "rows": []
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "sidebar-nav",
@@ -1439,7 +1460,8 @@
           "items": []
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "records-table",
@@ -1484,7 +1506,8 @@
           "records": []
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "fine-tune-card",
@@ -1529,7 +1552,8 @@
           "training": true
         }
       }
-    ]
+    ],
+    "platform": "desktop"
   },
   {
     "key": "selection-actions",
@@ -1591,6 +1615,129 @@
           "modelValue": "make it shorter"
         }
       }
-    ]
+    ],
+    "platform": "desktop"
+  },
+  {
+    "key": "thinking-orbs",
+    "name": {
+      "zh": "Thinking Orbs 思考光球",
+      "en": "Thinking Orbs"
+    },
+    "description": {
+      "zh": "九种手调动画的思考光球指示器——运转、搜索、求解、聆听、连接等状态，Canvas 点阵渲染，自动跟随明暗主题",
+      "en": "Nine hand-tuned thinking-orb indicators — working, searching, solving, listening, connecting — dotted Canvas render, auto dark/light"
+    },
+    "category": "ai",
+    "tags": [
+      {
+        "zh": "AI",
+        "en": "AI"
+      },
+      {
+        "zh": "加载",
+        "en": "Loading"
+      },
+      {
+        "zh": "思考",
+        "en": "Thinking"
+      }
+    ],
+    "order": 26,
+    "visible": true,
+    "source": "components/thinking-orbs",
+    "variants": [
+      {
+        "id": "working",
+        "label": {
+          "zh": "运转",
+          "en": "Working"
+        },
+        "props": {
+          "state": "working"
+        }
+      },
+      {
+        "id": "searching",
+        "label": {
+          "zh": "搜索",
+          "en": "Searching"
+        },
+        "props": {
+          "state": "searching"
+        }
+      },
+      {
+        "id": "solving",
+        "label": {
+          "zh": "求解",
+          "en": "Solving"
+        },
+        "props": {
+          "state": "solving"
+        }
+      },
+      {
+        "id": "listening",
+        "label": {
+          "zh": "聆听",
+          "en": "Listening"
+        },
+        "props": {
+          "state": "listening"
+        }
+      },
+      {
+        "id": "connecting",
+        "label": {
+          "zh": "连接",
+          "en": "Connecting"
+        },
+        "props": {
+          "state": "connecting"
+        }
+      },
+      {
+        "id": "weaving",
+        "label": {
+          "zh": "编织",
+          "en": "Weaving"
+        },
+        "props": {
+          "state": "weaving"
+        }
+      },
+      {
+        "id": "composing",
+        "label": {
+          "zh": "创作",
+          "en": "Composing"
+        },
+        "props": {
+          "state": "composing"
+        }
+      },
+      {
+        "id": "breathing",
+        "label": {
+          "zh": "呼吸",
+          "en": "Breathing"
+        },
+        "props": {
+          "state": "breathing"
+        }
+      },
+      {
+        "id": "shaping",
+        "label": {
+          "zh": "塑形",
+          "en": "Shaping"
+        },
+        "props": {
+          "state": "shaping"
+        }
+      }
+    ],
+    "platform": "desktop"
   }
 ]

@@ -17,6 +17,8 @@ export interface RegistryEntry {
   name: LocalizedText
   description: LocalizedText
   category: string
+  /** 平台（端）归属：引用 platforms.json 的 key（mobile/desktop 等，Console 可管理） */
+  platform: string
   tags: LocalizedText[]
   order: number
   visible: boolean
@@ -35,3 +37,13 @@ export interface RegistryCategory {
 }
 
 export type CategoriesJson = RegistryCategory[]
+
+// 平台（端）：独立数据文件 registry/platforms.json，Console 可增删改排序，
+// 展示站全局端切换器与 Console 下拉均数据驱动。
+export interface Platform {
+  key: string
+  label: LocalizedText
+  order: number
+}
+
+export type PlatformsJson = Platform[]

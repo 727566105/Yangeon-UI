@@ -11,4 +11,9 @@ export const registryEntries: RegistryEntry[] = (registryJson as RegistryEntry[]
   .filter((e) => e.visible)
   .sort((a, b) => a.order - b.order)
 
+/** 按平台（端）过滤后的条目：展示站端切换器驱动（visible + platform + order 排序） */
+export function registryEntriesFor(platform: string): RegistryEntry[] {
+  return registryEntries.filter((e) => e.platform === platform)
+}
+
 export const componentMap: ComponentMap = buildComponentMap()

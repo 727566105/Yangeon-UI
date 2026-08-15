@@ -6,19 +6,26 @@ import type { RegistryEntry } from '@yzen-ui/shared'
 vi.mock('../../api', () => ({
   importComponent: vi.fn(),
   fetchCategories: vi.fn(),
+  fetchPlatforms: vi.fn(),
   fetchRegistry: vi.fn(),
   saveRegistry: vi.fn(),
 }))
 
-import { importComponent, fetchCategories, fetchRegistry, saveRegistry } from '../../api'
+import { importComponent, fetchCategories, fetchPlatforms, fetchRegistry, saveRegistry } from '../../api'
 const mockedImport = vi.mocked(importComponent)
 const mockedFetchCats = vi.mocked(fetchCategories)
+const mockedFetchPlats = vi.mocked(fetchPlatforms)
 const mockedFetchReg = vi.mocked(fetchRegistry)
 const mockedSave = vi.mocked(saveRegistry)
 
 const CATEGORIES = [
   { key: 'basic', label: { zh: '基础组件', en: 'Basic' }, order: 1 },
   { key: 'ai', label: { zh: 'AI 场景', en: 'AI' }, order: 2 },
+]
+
+const PLATFORMS = [
+  { key: 'mobile', label: { zh: '移动端', en: 'Mobile' }, order: 1 },
+  { key: 'desktop', label: { zh: 'PC 端', en: 'Desktop' }, order: 2 },
 ]
 
 const ENTRY: RegistryEntry = {
@@ -35,22 +42,23 @@ const ENTRY: RegistryEntry = {
 
 const SFC = '<template><div>hi</div></template>\n<script setup lang="ts">\nconst x = 1\n</script>'
 
-// 表单字段顺序：key / 分类 select / name zh / name en / desc zh / desc en / tag zh / tag en / textarea
+// 表单字段顺序：key / 分类 select / 端 select / name zh / name en / desc zh / desc en / tag zh / tag en / textarea
 async function fillForm(wrapper: ReturnType<typeof mount>, key: string) {
   const inputs = wrapper.findAll('.wizard__input')
   await inputs[0].setValue(key)
-  await inputs[2].setValue('我的组件')
-  await inputs[3].setValue('My Widget')
-  await inputs[4].setValue('我的描述')
-  await inputs[5].setValue('My Description')
-  await inputs[6].setValue('标签')
-  await inputs[7].setValue('Tag')
+  await inputs[3].setValue('我的组件')
+  await inputs[4].setValue('My Widget')
+  await inputs[5].setValue('我的描述')
+  await inputs[6].setValue('My Description')
+  await inputs[7].setValue('标签')
+  await inputs[8].setValue('Tag')
   await wrapper.find('.wizard__textarea').setValue(SFC)
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
   mockedFetchCats.mockResolvedValue(CATEGORIES)
+  mockedFetchPlats.mockResolvedValue(PLATFORMS)
   mockedFetchReg.mockResolvedValue([ENTRY])
   mockedImport.mockResolvedValue({ ok: true, name: 'MyWidget' })
   mockedSave.mockResolvedValue({ ok: true })
@@ -60,11 +68,11 @@ describe('ImportWizard', () => {
   it('renders metadata fields alongside the source editor', async () => {
     const wrapper = mount(ImportWizard)
     await flushPromises()
-    // key + 分类 + name/desc/tag 双语 = 8 个输入
-    expect(wrapper.findAll('.wizard__input').length).toBe(8)
-    // 分类下拉由数据驱动（显示双语 label）
+    // key + 分类 + 端 + name/desc/tag 双语 = 9 个输入
+    expect(wrapper.findAll('.wizard__input').length).toBe(9)
+    // 分类/端下拉由数据驱动（显示双语 label）
     const options = wrapper.findAll('.wizard__field select option')
-    expect(options.map((o) => o.text())).toEqual(['基础组件', 'AI 场景'])
+    expect(options.map((o) => o.text())).toEqual(['基础组件', 'AI 场景', '移动端', 'PC 端'])
   })
 
   it('publishes in one step: creates files + writes the registry entry', async () => {

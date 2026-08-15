@@ -28,6 +28,7 @@ beforeEach(() => {
         name: { zh: 'Button 按钮', en: 'Button' },
         description: { zh: '按钮', en: 'A button' },
         category: 'basic',
+        platform: 'desktop',
         tags: [{ zh: '基础', en: 'Basic' }],
         order: 1,
         visible: true,
@@ -38,6 +39,10 @@ beforeEach(() => {
   )
   writeFileSync(join(root, 'registry/categories.json'), JSON.stringify([
     { key: 'basic', label: { zh: '基础组件', en: 'Basic' }, order: 1 },
+  ]))
+  writeFileSync(join(root, 'registry/platforms.json'), JSON.stringify([
+    { key: 'mobile', label: { zh: '移动端', en: 'Mobile' }, order: 1 },
+    { key: 'desktop', label: { zh: 'PC 端', en: 'Desktop' }, order: 2 },
   ]))
   writeFileSync(
     join(root, 'packages/yzen-ui/src/components/button/Button.vue'),
@@ -151,5 +156,49 @@ describe('yz CLI coverage', () => {
     } finally {
       rmSync(outside, { recursive: true, force: true })
     }
+  })
+})
+
+describe('yz CLI platforms', () => {
+  it('components list filters by --platform', () => {
+    // 造第二个 mobile 组件
+    mkdirSync(join(root, 'packages/yzen-ui/src/components/m-card'), { recursive: true })
+    const two = JSON.parse(readFileSync(join(root, 'registry/registry.json'), 'utf8'))
+    two.push({
+      key: 'm-card',
+      name: { zh: 'M 卡片', en: 'M Card' },
+      description: { zh: '移动卡片', en: 'Mobile card' },
+      category: 'basic',
+      platform: 'mobile',
+      tags: [{ zh: '移动', en: 'Mobile' }],
+      order: 2,
+      visible: true,
+      source: 'components/m-card',
+      variants: [{ id: 'default', label: { zh: '默认', en: 'Default' }, props: {} }],
+    })
+    writeFileSync(join(root, 'registry/registry.json'), JSON.stringify(two))
+
+    const mobile = runCli(['components', 'list', '--platform', 'mobile'])
+    const list = JSON.parse(mobile) as Array<{ key: string; platform: string }>
+    expect(list).toHaveLength(1)
+    expect(list[0].key).toBe('m-card')
+    expect(list[0].platform).toBe('mobile')
+
+    const desktop = runCli(['components', 'list', '--platform', 'desktop'])
+    expect(JSON.parse(desktop)).toHaveLength(1)
+  })
+
+  it('platforms list outputs bilingual labels with component counts', () => {
+    const out = runCli(['platforms', 'list'])
+    const list = JSON.parse(out) as Array<{ key: string; labelZh: string; componentCount: number }>
+    expect(list).toEqual([
+      { key: 'mobile', labelZh: '移动端', labelEn: 'Mobile', order: 1, componentCount: 0 },
+      { key: 'desktop', labelZh: 'PC 端', labelEn: 'Desktop', order: 2, componentCount: 1 },
+    ])
+  })
+
+  it('info prints the platform count', () => {
+    const out = runCli(['info'])
+    expect(out).toContain('平台数: 2')
   })
 })

@@ -1,7 +1,7 @@
 // 本地 API 封装（对应 server/registryApi.ts 的中间件路由）。
 // 除 login 外所有接口需携带登录 token（Authorization: Bearer）；401 时清 token 抛错，
 // 由 App 层回退到登录页。
-import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared'
+import type { Platform, RegistryCategory, RegistryEntry } from '@yzen-ui/shared'
 
 const TOKEN_KEY = 'yz-console-token'
 
@@ -102,6 +102,23 @@ export async function saveCategories(
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(categories),
+  })
+  return res.json() as Promise<{ ok: true } | { ok: false; errors: string[] }>
+}
+
+export async function fetchPlatforms(): Promise<Platform[]> {
+  const res = await authFetch('/api/platforms')
+  if (!res.ok) throw new Error(`GET /api/platforms: ${res.status}`)
+  return res.json() as Promise<Platform[]>
+}
+
+export async function savePlatforms(
+  platforms: Platform[],
+): Promise<{ ok: true } | { ok: false; errors: string[] }> {
+  const res = await authFetch('/api/platforms', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(platforms),
   })
   return res.json() as Promise<{ ok: true } | { ok: false; errors: string[] }>
 }

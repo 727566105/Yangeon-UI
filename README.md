@@ -7,7 +7,7 @@
 ## 产品形态：一库双端
 
 ```
-组件库 yzen-ui —— 手工精心制作的 AI 科技风 Vue 组件（核心资产，25 个组件）
+组件库 yzen-ui —— 手工精心制作的 AI 科技风 Vue 组件（核心资产，26 个组件）
         │
         ├── Showcase 展示站 —— 长滚动锚点布局 / 实时交互预览 / 变体切换 / 复制代码 / 中英文切换
         │
@@ -29,7 +29,7 @@ Vue 3 · TypeScript · Vite · SCSS + CSS Variables · pnpm monorepo
 
 ## 当前状态
 
-✅ **V1.1 完成** — 组件库 25 个组件（6 基础 + 19 AI）、Showcase 全功能（beautifului 复刻 + 中英文切换）、Console 管理端（组件列表/元信息/变体编辑/实时预览/沙箱收录）。
+✅ **V1.1 完成** — 组件库 26 个组件（6 基础 + 20 AI）、Showcase 全功能（beautifului 复刻 + 中英文切换）、Console 管理端（组件列表/元信息/变体编辑/实时预览/沙箱收录）。
 
 ## 快速启动
 
@@ -46,15 +46,16 @@ pnpm build:console  # 构建管理端
 
 本地组件管理应用，维护 `registry/registry.json`（组件元信息 + 双语文案），保存后 Showcase 构建/刷新即生效：
 
-- **组件列表**：搜索、分类筛选、可见状态一览
+- **组件列表**：搜索、分类/端筛选、↑↓ 排序（保存即生效）、可见状态一览
 - **分类管理**：分组可新增/改名/排序/删除（使用中禁删），展示站侧栏分组即时生效
-- **元信息编辑**：中英文名称/描述/标签、分类、排序、展示开关
+- **端管理**：移动端/PC 端等平台可新增/改名/排序/删除（使用中禁删），展示站全局端切换即时生效
+- **元信息编辑**：中英文名称/描述/标签、分类、端、排序、展示开关
 - **变体配置**：增删/排序/重命名变体，props 预设 JSON 编辑
 - **实时预览**：与 Showcase 同一渲染路径（`@yzen-ui/shared` DemoStage），所见即所得
 - **收录向导**：粘贴 Vue SFC 或拖入 `.vue` 文件 → 沙箱 iframe 预览（`sandbox="allow-scripts"` 隔离）→ 生成组件四文件 → 补全元信息上站
 
 > 访问：本机 http://localhost:5174，局域网 http://<本机IP>:5174（监听 0.0.0.0）。
-> 🔐 登录：默认密码 `yzenui`（启动日志有提醒）——通过环境变量 `YZ_CONSOLE_PASSWORD` 修改；
+> 🔐 登录：默认密码 `123456`（启动日志有提醒）——通过环境变量 `YZ_CONSOLE_PASSWORD` 修改；
 > 会话 token 存浏览器 localStorage，刷新免登录；所有 /api 写接口均需登录（401 自动回落登录页）。
 > ⚠️ 安全：密码鉴权面向局域网可信网络；公共 WiFi/公网请勿开启；写盘前服务端校验 + 原子写入。
 
@@ -77,10 +78,11 @@ node packages/cli/bin/yz.mjs init   # 在目标项目生成接入指南
 
 ### MCP（AI 编程工具接入）
 
-`packages/mcp-server` 提供 9 个只读 tools（stdio 传输，零缓存实时读取）：
+`packages/mcp-server` 提供 10 个只读 tools（stdio 传输，零缓存实时读取）：
 
-`get_project_info` · `list_components` · `get_component` · `get_component_source` ·
-`get_component_demo` · `get_variants` · `get_design_tokens` · `get_style_guide` · `get_project_docs`
+`get_project_info` · `list_components`（分类/平台/关键词筛选）· `list_platforms`（平台端清单）·
+`get_component` · `get_component_source` · `get_component_demo` · `get_variants` ·
+`get_design_tokens` · `get_style_guide` · `get_project_docs`
 
 **Claude Desktop** 配置（claude_desktop_config.json）：
 

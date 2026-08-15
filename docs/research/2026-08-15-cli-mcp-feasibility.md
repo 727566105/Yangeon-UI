@@ -81,7 +81,7 @@ MCP/CLI 不是静态快照，而是**跟随项目实时变化、覆盖整个项�
 ### 2.2 HTTP 接口与鉴权模型（接入层）
 
 - 8 个路由：login/logout/registry GET+PUT/components/import/categories GET+PUT
-- 鉴权：单密码（`YZ_CONSOLE_PASSWORD`，默认 `yzenui`）→ 内存 `Set` 签发随机 token → 除 login 外全部 `Authorization: Bearer` 校验（401）
+- 鉴权：单密码（`YZ_CONSOLE_PASSWORD`，默认 `123456`）→ 内存 `Set` 签发随机 token → 除 login 外全部 `Authorization: Bearer` 校验（401）
 - **token 不可跨进程**（模块级内存 Set，dev server 重启失效）；鉴权仅存在于 HTTP 中间件层
 
 ### 2.3 可复用性结论
@@ -189,14 +189,14 @@ packages/registry-core（新）   ← 项目感知层（ProjectContext）：以�
                                   规模与动态：元信息全量读、源码按 key 懒读、零缓存实时反映项目最新状态
 
 packages/cli（新）             ← 命令层（commander）+ 仓库根发现（--root / 向上查找）
-packages/mcp-server（新）      ← @modelcontextprotocol/server + zod + 9 个只读 tools（清单工具带筛选）
+packages/mcp-server（新）      ← @modelcontextprotocol/server + zod + 10 个只读 tools（清单工具带筛选）
 ```
 
 ### 6.3 实施步骤（批次）
 
 1. **批次 1 · 项目感知层**：`packages/registry-core`（listComponents 精简+筛选 / getComponent / 源码/demo 懒读取 / projectInfo / token 解析 / style-guide / docs 读取）；单测含 **100+ 组件规模用例** + **动态性用例**（新增 fake 组件后再次查询立即可见，验证零缓存）
 2. **批次 2 · CLI**：命令实现 + 单测 + 终端实测（list 筛选/get/tokens/style-guide/info/docs）
-3. **批次 3 · MCP**：server + 9 个只读 tools + 单测（handler 直测）；用 MCP Inspector / 客户端实测（AI 查询组件 → 取源码 → 按 token 写代码；新增组件后无需重启即可查）
+3. **批次 3 · MCP**：server + 10 个只读 tools + 单测（handler 直测）；用 MCP Inspector / 客户端实测（AI 查询组件 → 取源码 → 按 token 写代码；新增组件后无需重启即可查）
 4. **批次 4 · 收尾**：README（Claude Desktop/Cursor 接入配置说明）；管理写工具列为后置
 
 ### 6.4 风险清单

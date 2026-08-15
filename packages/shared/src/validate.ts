@@ -1,8 +1,8 @@
 // Registry 校验（PRD 5.3 构建期防漂移）：双端共用——
 // Console 保存前校验、Showcase 构建/测试时校验、本地 API 写盘前服务端校验。
-import type { RegistryCategory, RegistryEntry } from './types'
+import type { Platform, RegistryCategory, RegistryEntry } from './types'
 
-const CATEGORY_KEY_RE = /^[a-z0-9-]+$/
+const KEY_RE = /^[a-z0-9-]+$/
 
 export function validateCategories(
   categories: RegistryCategory[],
@@ -11,7 +11,7 @@ export function validateCategories(
   const keys = new Set<string>()
   const orders = new Set<number>()
   for (const c of categories) {
-    if (!CATEGORY_KEY_RE.test(c.key)) errors.push(`分类 key 格式非法（仅允许小写字母/数字/连字符）: ${c.key}`)
+    if (!KEY_RE.test(c.key)) errors.push(`分类 key 格式非法（仅允许小写字母/数字/连字符）: ${c.key}`)
     if (keys.has(c.key)) errors.push(`重复分类 key: ${c.key}`)
     keys.add(c.key)
     if (!c.label?.zh || !c.label?.en) errors.push(`分类 ${c.key ?? '?'} 的 label 缺少双语文案`)
@@ -22,21 +22,45 @@ export function validateCategories(
   return errors.length ? { ok: false, errors } : { ok: true }
 }
 
+export function validatePlatforms(
+  platforms: Platform[],
+): { ok: true } | { ok: false; errors: string[] } {
+  const errors: string[] = []
+  const keys = new Set<string>()
+  const orders = new Set<number>()
+  for (const p of platforms) {
+    if (!KEY_RE.test(p.key)) errors.push(`平台 key 格式非法（仅允许小写字母/数字/连字符）: ${p.key}`)
+    if (keys.has(p.key)) errors.push(`重复平台 key: ${p.key}`)
+    keys.add(p.key)
+    if (!p.label?.zh || !p.label?.en) errors.push(`平台 ${p.key ?? '?'} 的 label 缺少双语文案`)
+    if (!Number.isInteger(p.order)) errors.push(`平台 ${p.key ?? '?'} 的 order 必须为整数`)
+    if (orders.has(p.order)) errors.push(`平台 order 重复: ${p.order}`)
+    orders.add(p.order)
+  }
+  return errors.length ? { ok: false, errors } : { ok: true }
+}
+
 export function validateRegistry(
   entries: RegistryEntry[],
   available: string[],
   categories?: RegistryCategory[],
+  platforms?: Platform[],
 ): { ok: true } | { ok: false; errors: string[] } {
   const errors: string[] = []
   const keys = new Set<string>()
   const orders = new Set<number>()
   const categoryKeys = new Set(categories?.map((c) => c.key) ?? [])
+  const platformKeys = new Set(platforms?.map((p) => p.key) ?? [])
   for (const e of entries) {
     if (keys.has(e.key)) errors.push(`重复组件 key: ${e.key}`)
     keys.add(e.key)
     if (!available.includes(e.key)) errors.push(`registry 引用了不存在的组件: ${e.key} (source: ${e.source})`)
     if (categories && !categoryKeys.has(e.category)) {
       errors.push(`组件 ${e.key} 引用了不存在的分类: ${e.category}`)
+    }
+    if (!e.platform) errors.push(`组件 ${e.key} 缺少 platform 字段`)
+    if (platforms && !platformKeys.has(e.platform)) {
+      errors.push(`组件 ${e.key} 引用了不存在的平台: ${e.platform}`)
     }
     if (!Number.isInteger(e.order)) errors.push(`order 必须为整数: ${e.key}`)
     if (orders.has(e.order)) errors.push(`order 重复: ${e.order} (${e.key})`)

@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SiteSidebar from '../SiteSidebar.vue'
 import { setLocale } from '../../i18n'
+import { registryEntries } from '../../registry'
+import { platforms } from '../../platforms'
 
 beforeEach(() => {
   window.localStorage.clear()
@@ -14,7 +16,7 @@ afterEach(() => {
 
 describe('SiteSidebar', () => {
   it('renders Chinese copy by default, including registry-driven nav names', () => {
-    const wrapper = mount(SiteSidebar, { props: { activeKey: null } })
+    const wrapper = mount(SiteSidebar, { props: { activeKey: null, platforms, activePlatform: 'desktop', entries: registryEntries } })
     expect(wrapper.find('.sidebar__title').text()).toBe('Yzen-UI for AI-native interfaces.')
     // 分类分组与注册表条目名（来自 i18n messages）
     expect(wrapper.text()).toContain('基础组件')
@@ -28,7 +30,7 @@ describe('SiteSidebar', () => {
   })
 
   it('switches the whole sidebar to English on click without reload', async () => {
-    const wrapper = mount(SiteSidebar, { props: { activeKey: null } })
+    const wrapper = mount(SiteSidebar, { props: { activeKey: null, platforms, activePlatform: 'desktop', entries: registryEntries } })
     const enButton = wrapper.findAll('.lang-switch__item')[1]
     await enButton.trigger('click')
     expect(wrapper.find('.sidebar__title').text()).toBe('Yzen-UI for AI-native interfaces.')
@@ -54,7 +56,7 @@ describe('SiteSidebar', () => {
     const section = document.createElement('section')
     section.id = 'section-button'
     document.body.appendChild(section)
-    const wrapper = mount(SiteSidebar, { props: { activeKey: 'button' }, attachTo: document.body })
+    const wrapper = mount(SiteSidebar, { props: { activeKey: 'button', platforms, activePlatform: 'desktop', entries: registryEntries }, attachTo: document.body })
     await wrapper.find('a[href="#section-button"]').trigger('click')
 
     expect(scrollIntoView).toHaveBeenCalledTimes(1)
@@ -68,7 +70,7 @@ describe('SiteSidebar', () => {
     window.HTMLElement.prototype.scrollIntoView = scrollIntoView
     window.location.hash = '#section-button'
 
-    const wrapper = mount(SiteSidebar, { props: { activeKey: 'button' } })
+    const wrapper = mount(SiteSidebar, { props: { activeKey: 'button', platforms, activePlatform: 'desktop', entries: registryEntries } })
     await wrapper.find('a[href="#section-card"]').trigger('click')
 
     expect(scrollIntoView).not.toHaveBeenCalled()

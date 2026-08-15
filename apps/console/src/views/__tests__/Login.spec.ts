@@ -25,10 +25,10 @@ describe('Login', () => {
   it('emits logged-in on success and stores nothing locally (api handles token)', async () => {
     mockedLogin.mockResolvedValue({ ok: true, token: 'tok-123' })
     const wrapper = mount(Login)
-    await wrapper.find('input[type="password"]').setValue('yzenui')
+    await wrapper.find('input[type="password"]').setValue('123456')
     await wrapper.find('form').trigger('submit')
     await flushPromises()
-    expect(mockedLogin).toHaveBeenCalledWith('yzenui')
+    expect(mockedLogin).toHaveBeenCalledWith('123456')
     expect(mockedSetToken).toHaveBeenCalledWith('tok-123')
     expect(wrapper.emitted('logged-in')).toBeTruthy()
   })

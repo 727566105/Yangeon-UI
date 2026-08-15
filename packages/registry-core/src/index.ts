@@ -8,6 +8,7 @@ export type {
   ComponentSummary,
   ComponentDetail,
   ComponentFilter,
+  PlatformSummary,
   TokenGroup,
   DesignTokens,
   ProjectInfo,

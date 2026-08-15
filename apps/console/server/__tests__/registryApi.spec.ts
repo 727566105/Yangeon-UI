@@ -11,7 +11,7 @@ import {
   registryApiMiddleware,
 } from '../registryApi'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared/types'
+import type { Platform, RegistryCategory, RegistryEntry } from '@yzen-ui/shared/types'
 
 // 每个用例独立的临时仓库根（registry/ + packages/yzen-ui/src/components/ 最小结构）
 let root = ''
@@ -22,6 +22,7 @@ const SAMPLE: RegistryEntry = {
   name: { zh: 'Button 按钮', en: 'Button' },
   description: { zh: '描述', en: 'Description' },
   category: 'basic',
+  platform: 'desktop',
   tags: [{ zh: '基础', en: 'Basic' }],
   order: 1,
   visible: true,
@@ -32,6 +33,11 @@ const SAMPLE: RegistryEntry = {
 const CATEGORIES: RegistryCategory[] = [
   { key: 'basic', label: { zh: '基础组件', en: 'Basic' }, order: 1 },
   { key: 'ai', label: { zh: 'AI 场景', en: 'AI' }, order: 2 },
+]
+
+const PLATFORMS: Platform[] = [
+  { key: 'mobile', label: { zh: '移动端', en: 'Mobile' }, order: 1 },
+  { key: 'desktop', label: { zh: 'PC 端', en: 'Desktop' }, order: 2 },
 ]
 
 beforeEach(() => {
@@ -46,6 +52,11 @@ beforeEach(() => {
   writeFileSync(
     join(root, 'registry/categories.json'),
     JSON.stringify(CATEGORIES, null, 2) + '\n',
+    'utf8',
+  )
+  writeFileSync(
+    join(root, 'registry/platforms.json'),
+    JSON.stringify(PLATFORMS, null, 2) + '\n',
     'utf8',
   )
   api = createRegistryApi(root)
@@ -213,12 +224,12 @@ function mockPost(url: string, body: unknown): IncomingMessage {
 
 describe('auth', () => {
   it('issues a token for the correct password only', () => {
-    expect(issueToken('yzenui')).toBeTruthy()
+    expect(issueToken('123456')).toBeTruthy()
     expect(issueToken('wrong-password')).toBeNull()
   })
 
   it('validates and clears tokens', () => {
-    const token = issueToken('yzenui')!
+    const token = issueToken('123456')!
     expect(isValidToken(token)).toBe(true)
     clearToken(token)
     expect(isValidToken(token)).toBe(false)
@@ -249,7 +260,7 @@ describe('auth', () => {
   })
 
   it('accepts API calls with a valid token', async () => {
-    const token = issueToken('yzenui')!
+    const token = issueToken('123456')!
     const middleware = registryApiMiddleware(api)
     const { res, out } = mockRes()
     await middleware(
@@ -263,7 +274,7 @@ describe('auth', () => {
   it('accepts login with the correct password and returns a token', async () => {
     const middleware = registryApiMiddleware(api)
     const { res, out } = mockRes()
-    await middleware(mockPost('/api/login', { password: 'yzenui' }), res, () => {})
+    await middleware(mockPost('/api/login', { password: '123456' }), res, () => {})
     expect(out.status).toBe(200)
     const parsed = JSON.parse(out.body)
     expect(parsed.ok).toBe(true)
@@ -278,7 +289,7 @@ describe('auth', () => {
   })
 
   it('logout invalidates the token', async () => {
-    const token = issueToken('yzenui')!
+    const token = issueToken('123456')!
     const middleware = registryApiMiddleware(api)
     const { res, out } = mockRes()
     await middleware(
@@ -293,5 +304,43 @@ describe('auth', () => {
     )
     expect(out.status).toBe(200)
     expect(isValidToken(token)).toBe(false)
+  })
+})
+
+describe('registryApi platforms', () => {
+  it('reads and writes platforms atomically', () => {
+    expect(api.readPlatforms()).toHaveLength(2)
+    const modified: Platform[] = [
+      ...PLATFORMS,
+      { key: 'tablet', label: { zh: '平板', en: 'Tablet' }, order: 3 },
+    ]
+    const result = api.writePlatforms(modified)
+    expect(result).toEqual({ ok: true })
+    expect(api.readPlatforms()).toHaveLength(3)
+    expect(existsSync(join(root, 'registry/platforms.json.tmp'))).toBe(false)
+  })
+
+  it('rejects malformed platforms (no write)', () => {
+    const bad: Platform[] = [{ key: '../evil', label: { zh: 'x', en: 'x' }, order: 1 }]
+    const result = api.writePlatforms(bad)
+    expect(result.ok).toBe(false)
+    expect(api.readPlatforms()).toHaveLength(2)
+  })
+
+  it('rejects deleting a platform that is in use', () => {
+    // SAMPLE 组件 platform 为 desktop，删除 desktop 应拒绝并列出使用数量
+    const withoutDesktop = PLATFORMS.filter((p) => p.key !== 'desktop')
+    const result = api.writePlatforms(withoutDesktop)
+    expect(result.ok).toBe(false)
+    const errors = (result as { errors: string[] }).errors
+    expect(errors.some((e) => e.includes('desktop') && e.includes('1 个组件'))).toBe(true)
+    expect(api.readPlatforms()).toHaveLength(2)
+  })
+
+  it('writeRegistry rejects entries referencing unknown platforms', () => {
+    const bad: RegistryEntry = { ...SAMPLE, platform: 'ghost-device' }
+    const result = api.writeRegistry([bad])
+    expect(result.ok).toBe(false)
+    expect((result as { errors: string[] }).errors.some((e) => e.includes('ghost-device'))).toBe(true)
   })
 })

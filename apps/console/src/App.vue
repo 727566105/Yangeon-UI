@@ -4,18 +4,20 @@ import ComponentList from './views/ComponentList.vue'
 import ComponentEdit from './views/ComponentEdit.vue'
 import ImportWizard from './views/ImportWizard.vue'
 import Categories from './views/Categories.vue'
+import Platforms from './views/Platforms.vue'
 import Login from './views/Login.vue'
-import { fetchRegistry, fetchCategories, getToken, setToken, logout, AuthError } from './api'
+import { fetchRegistry, fetchCategories, fetchPlatforms, getToken, setToken, logout, AuthError } from './api'
 import { useI18n } from './i18n'
-import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared'
+import type { Platform, RegistryCategory, RegistryEntry } from '@yzen-ui/shared'
 
 const { t, locale, setLocale } = useI18n()
 
-type View = 'list' | 'edit' | 'import' | 'categories'
+type View = 'list' | 'edit' | 'import' | 'categories' | 'platforms'
 const view = ref<View>('list')
 const editingKey = ref<string | null>(null)
 const entries = ref<RegistryEntry[]>([])
 const categories = ref<RegistryCategory[]>([])
+const platforms = ref<Platform[]>([])
 const loadError = ref('')
 
 // 登录态：本地 token 存在视为已登录（API 401 时自动回落登录页）
@@ -23,9 +25,10 @@ const authenticated = ref(!!getToken())
 
 async function load() {
   try {
-    const [reg, cats] = await Promise.all([fetchRegistry(), fetchCategories()])
+    const [reg, cats, plats] = await Promise.all([fetchRegistry(), fetchCategories(), fetchPlatforms()])
     entries.value = reg
     categories.value = cats
+    platforms.value = plats
     loadError.value = ''
   } catch (e) {
     if (e instanceof AuthError) {
@@ -39,9 +42,9 @@ onMounted(() => {
   if (authenticated.value) load()
 })
 
-// 视图切换时刷新数据（分类/组件可能在别的视图被修改；categories 供下拉数据驱动）
+// 视图切换时刷新数据（分类/端/组件可能在别的视图被修改；categories/platforms 供下拉数据驱动）
 watch(view, (v) => {
-  if (v !== 'categories' && authenticated.value) load()
+  if (v !== 'categories' && v !== 'platforms' && authenticated.value) load()
 })
 
 function onLoggedIn() {
@@ -66,6 +69,11 @@ function goImport() {
 
 function goCategories() {
   view.value = 'categories'
+  load()
+}
+
+function goPlatforms() {
+  view.value = 'platforms'
   load()
 }
 
@@ -100,6 +108,12 @@ function setTheme(dark: boolean) {
           :class="{ 'console__nav-item--active': view === 'categories' }"
           @click="goCategories"
         >{{ t('nav.categories') }}</button>
+        <button
+          type="button"
+          class="console__nav-item"
+          :class="{ 'console__nav-item--active': view === 'platforms' }"
+          @click="goPlatforms"
+        >{{ t('nav.platforms') }}</button>
         <button
           type="button"
           class="console__nav-item"
@@ -158,8 +172,10 @@ function setTheme(dark: boolean) {
         v-if="view === 'list'"
         :entries="entries"
         :categories="categories"
+        :platforms="platforms"
         @edit="openEdit"
         @import="goImport"
+        @order-saved="load"
       />
       <ComponentEdit
         v-else-if="view === 'edit' && editingKey"
@@ -167,10 +183,12 @@ function setTheme(dark: boolean) {
         :entry="entries.find((e) => e.key === editingKey)"
         :entry-key="editingKey"
         :categories="categories"
+        :platforms="platforms"
         @back="view = 'list'"
         @saved="view = 'list'"
       />
       <Categories v-else-if="view === 'categories'" />
+      <Platforms v-else-if="view === 'platforms'" />
       <ImportWizard v-else-if="view === 'import'" @done="view = 'list'" />
     </main>
   </div>

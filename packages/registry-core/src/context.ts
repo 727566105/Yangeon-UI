@@ -5,7 +5,7 @@
 // - 按需读取：源码/demo 按 key 懒读；listComponents 返回精简字段 + 筛选，适配 100+ 组件规模
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared/types'
+import type { Platform, RegistryCategory, RegistryEntry } from '@yzen-ui/shared/types'
 import { findRepoRoot } from './root.ts'
 import { readThemeTokens } from './tokens.ts'
 import { STYLE_GUIDE } from './styleGuide.ts'
@@ -15,17 +15,20 @@ import type {
   ComponentSummary,
   DesignTokens,
   DocInfo,
+  PlatformSummary,
   ProjectInfo,
 } from './types.ts'
 
 const REGISTRY_REL = 'registry/registry.json'
 const CATEGORIES_REL = 'registry/categories.json'
+const PLATFORMS_REL = 'registry/platforms.json'
 const COMPONENTS_REL = 'packages/yzen-ui/src/components'
 
 export interface ProjectContext {
   root: string
   getProjectInfo(): ProjectInfo
   listComponents(filter?: ComponentFilter): ComponentSummary[]
+  listPlatforms(): PlatformSummary[]
   getComponent(key: string): ComponentDetail | null
   readComponentSource(key: string): string | null
   readDemoSource(key: string): string | null
@@ -55,6 +58,10 @@ export function createProjectContext(root?: string): ProjectContext {
     return readJson<RegistryCategory[]>(CATEGORIES_REL) ?? []
   }
 
+  function platforms(): Platform[] {
+    return readJson<Platform[]>(PLATFORMS_REL) ?? []
+  }
+
   function componentKeys(): string[] {
     const dir = join(resolved, COMPONENTS_REL)
     if (!existsSync(dir)) return []
@@ -81,6 +88,7 @@ export function createProjectContext(root?: string): ProjectContext {
       hasDocs: existsSync(join(resolved, 'docs')),
       componentCount: componentKeys().length,
       categoryCount: categories().length,
+      platformCount: platforms().length,
     }
   }
 
@@ -94,11 +102,12 @@ export function createProjectContext(root?: string): ProjectContext {
   }
 
   function listComponents(filter: ComponentFilter = {}): ComponentSummary[] {
-    const { category, keyword, limit } = filter
+    const { category, platform, keyword, limit } = filter
     const q = keyword?.trim().toLowerCase() ?? ''
     const out: ComponentSummary[] = []
     for (const e of registry()) {
       if (category && e.category !== category) continue
+      if (platform && e.platform !== platform) continue
       if (q) {
         const hay = `${e.key} ${e.name.zh} ${e.name.en} ${e.tags.map((t) => t.zh + t.en).join(' ')}`.toLowerCase()
         if (!hay.includes(q)) continue
@@ -108,6 +117,7 @@ export function createProjectContext(root?: string): ProjectContext {
         nameZh: e.name.zh,
         nameEn: e.name.en,
         category: e.category,
+        platform: e.platform,
         order: e.order,
         visible: e.visible,
         variantCount: e.variants.length,
@@ -115,6 +125,19 @@ export function createProjectContext(root?: string): ProjectContext {
     }
     out.sort((a, b) => a.order - b.order)
     return limit && limit > 0 ? out.slice(0, limit) : out
+  }
+
+  /** 平台（端）清单：key + 双语 label + order + 每平台可见组件数（按 order 排序） */
+  function listPlatforms(): PlatformSummary[] {
+    return platforms()
+      .sort((a, b) => a.order - b.order)
+      .map((p) => ({
+        key: p.key,
+        labelZh: p.label.zh,
+        labelEn: p.label.en,
+        order: p.order,
+        componentCount: registry().filter((e) => e.platform === p.key && e.visible).length,
+      }))
   }
 
   function getComponent(key: string): ComponentDetail | null {
@@ -169,6 +192,7 @@ export function createProjectContext(root?: string): ProjectContext {
     root: resolved,
     getProjectInfo,
     listComponents,
+    listPlatforms,
     getComponent,
     readComponentSource,
     readDemoSource,

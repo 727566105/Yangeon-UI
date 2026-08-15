@@ -1,4 +1,4 @@
-// MCP 工具定义（9 个只读 tools，开发消费型）：
+// MCP 工具定义（10 个只读 tools，开发消费型）：
 // 全部复用 @yzen-ui/registry-core 项目感知层，handler 为纯函数（可直测）。
 // 注意：MCP SDK 的 registerTool 不保证服务端参数校验，handler 内用 zod safeParse 防御，
 // 无效参数返回明确错误而非静默忽略。
@@ -45,10 +45,11 @@ export const tools: ToolDef[] = [
   {
     name: 'list_components',
     description:
-      '组件清单（精简字段：key/名称/分类/排序/可见性/变体数）。' +
-      '支持按分类、关键词筛选与条数限制；100+ 组件规模下请使用筛选避免全量返回。',
+      '组件清单（精简字段：key/名称/分类/平台/排序/可见性/变体数）。' +
+      '支持按分类、平台（端）、关键词筛选与条数限制；100+ 组件规模下请使用筛选避免全量返回。',
     inputSchema: z.object({
       category: z.string().optional().describe('按分类 key 筛选（如 ai / basic）'),
+      platform: z.string().optional().describe('按平台（端）key 筛选（如 mobile / desktop）'),
       keyword: z.string().optional().describe('按组件 key/名称/标签关键词筛选'),
       limit: z.number().int().positive().optional().describe('限制返回条数'),
     }),
@@ -56,12 +57,21 @@ export const tools: ToolDef[] = [
       guard(
         z.object({
           category: z.string().optional(),
+          platform: z.string().optional(),
           keyword: z.string().optional(),
           limit: z.number().int().positive().optional(),
         }),
         args,
         (parsed) => json(ctx.listComponents(parsed)),
       ),
+  },
+  {
+    name: 'list_platforms',
+    description:
+      '平台（端）清单：key、双语 label、排序、每平台可见组件数（如移动端 mobile / PC 端 desktop）。' +
+      '做移动端/桌面端页面选组件时先查此表确认目标端有哪些组件。',
+    inputSchema: emptySchema,
+    handler: (ctx, args) => guard(emptySchema, args, () => json(ctx.listPlatforms())),
   },
   {
     name: 'get_component',
