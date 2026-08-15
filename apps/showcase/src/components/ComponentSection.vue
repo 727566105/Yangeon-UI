@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import type { Component } from 'vue'
 import VariantSwitcher from './VariantSwitcher.vue'
 import { YzIcon } from 'yzen-ui'
@@ -17,9 +17,17 @@ const sectionStyle = computed(() => ({
 }))
 
 // demo 组件（异步加载，构建期注册；文件位于 apps/showcase/src/components/，到仓库根 4 级）
-const demos = import.meta.glob(
+// 必须用 defineAsyncComponent 包装 loader——直接传 loader 函数会被 Vue 当函数式组件调用，
+// 返回的 Promise 会被字符串化渲染成 [object Promise]（实测缺陷）
+const demoLoaders = import.meta.glob(
   '../../../../packages/yzen-ui/src/components/*/demo.vue',
   { import: 'default' },
+)
+const demos = Object.fromEntries(
+  Object.entries(demoLoaders).map(([path, loader]) => [
+    path,
+    defineAsyncComponent(loader as () => Promise<unknown>),
+  ]),
 )
 const currentDemo = computed(
   () => demos[`../../../../packages/yzen-ui/src/components/${props.entry.key}/demo.vue`],
