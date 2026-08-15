@@ -5,10 +5,10 @@
 // - 按需读取：源码/demo 按 key 懒读；listComponents 返回精简字段 + 筛选，适配 100+ 组件规模
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared'
-import { findRepoRoot } from './root'
-import { readThemeTokens } from './tokens'
-import { STYLE_GUIDE } from './styleGuide'
+import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared/types'
+import { findRepoRoot } from './root.ts'
+import { readThemeTokens } from './tokens.ts'
+import { STYLE_GUIDE } from './styleGuide.ts'
 import type {
   ComponentDetail,
   ComponentFilter,
@@ -16,7 +16,7 @@ import type {
   DesignTokens,
   DocInfo,
   ProjectInfo,
-} from './types'
+} from './types.ts'
 
 const REGISTRY_REL = 'registry/registry.json'
 const CATEGORIES_REL = 'registry/categories.json'

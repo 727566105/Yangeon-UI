@@ -2,7 +2,7 @@
 // 提取 --yz-* 变量，按注释块分组（颜色/形状/阴影/字体/动效等）。
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { DesignTokens, TokenGroup } from './types'
+import type { DesignTokens, TokenGroup } from './types.ts'
 
 // 按注释块分组的 scss 片段：// 分组注释 → 后续 --yz-* 变量行
 // 注意：正则都不能用 g flag——str.match(g) 返回的数组不含捕获组
@@ -40,8 +40,14 @@ export function parseTokens(scssLight: string, scssDark: string): DesignTokens {
 export function readThemeTokens(root: string): DesignTokens {
   const lightPath = join(root, 'packages/yzen-ui/src/theme/tokens-light.scss')
   const darkPath = join(root, 'packages/yzen-ui/src/theme/tokens-dark.scss')
-  const light = readFileSync(lightPath, 'utf8')
+  // 主题文件缺失/损坏时优雅降级为空（组件库不完整场景不抛错）
+  let light = ''
   let dark = ''
+  try {
+    light = readFileSync(lightPath, 'utf8')
+  } catch {
+    /* light 缺失时为空 */
+  }
   try {
     dark = readFileSync(darkPath, 'utf8')
   } catch {

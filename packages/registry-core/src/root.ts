@@ -7,7 +7,8 @@ export function findRepoRoot(start?: string): string | null {
   for (;;) {
     if (existsSync(resolve(dir, 'pnpm-workspace.yaml'))) return dir
     const parent = dir.split(sep).slice(0, -1).join(sep)
-    if (parent === dir) return null
+    // 已到文件系统根或路径耗尽（parent 为空串）：无锚点
+    if (parent === dir || parent === '') return null
     dir = parent
   }
 }

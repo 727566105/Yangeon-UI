@@ -58,6 +58,47 @@ pnpm build:console  # 构建管理端
 > 会话 token 存浏览器 localStorage，刷新免登录；所有 /api 写接口均需登录（401 自动回落登录页）。
 > ⚠️ 安全：密码鉴权面向局域网可信网络；公共 WiFi/公网请勿开启；写盘前服务端校验 + 原子写入。
 
+## 开发消费接入（CLI / MCP）
+
+组件库提供 CLI 与 MCP 两种开发接入，让开发者与 AI 编程工具直接调用组件库的**内容**（组件/源码/用法）与**规范**（设计 token/代码规范），实时跟随组件库扩展。
+
+### CLI（yz 命令）
+
+```bash
+pnpm --filter @yzen-ui/cli dev:build  # 或直接:
+node packages/cli/bin/yz.mjs components list --category ai --limit 10
+node packages/cli/bin/yz.mjs components get ai-loading --source
+node packages/cli/bin/yz.mjs tokens
+node packages/cli/bin/yz.mjs style-guide
+node packages/cli/bin/yz.mjs info
+node packages/cli/bin/yz.mjs docs PRD
+node packages/cli/bin/yz.mjs init   # 在目标项目生成接入指南
+```
+
+### MCP（AI 编程工具接入）
+
+`packages/mcp-server` 提供 9 个只读 tools（stdio 传输，零缓存实时读取）：
+
+`get_project_info` · `list_components` · `get_component` · `get_component_source` ·
+`get_component_demo` · `get_variants` · `get_design_tokens` · `get_style_guide` · `get_project_docs`
+
+**Claude Desktop** 配置（claude_desktop_config.json）：
+
+```json
+{
+  "mcpServers": {
+    "yzen-ui": {
+      "command": "node",
+      "args": ["/绝对路径/Yzen UI/packages/mcp-server/bin/yz-mcp.mjs"]
+    }
+  }
+}
+```
+
+**Cursor** 配置：Settings → MCP → Add，Command 同上。
+
+AI 开发时即可查询组件清单/源码、按设计 token 与规范写代码，新增组件无需重启即可感知。
+
 ## 在项目中使用组件库
 
 ```bash

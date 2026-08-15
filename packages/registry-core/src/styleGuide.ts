@@ -11,7 +11,7 @@ export const STYLE_GUIDE = `# Yzen-UI 组件开发规范
 ## 组件四文件模式
 每个组件目录包含：
 - <Name>.vue —— 组件实现（props/emits 全 TS 类型，scoped 样式，纯 props/emits 驱动）
-- index.ts —— 导出（export { default as Yz<Name> } from './<Name>.vue'）
+- index.ts —— 导出（export { default as Yz<Name> } from './<Name>.vue.ts'）
 - demo.vue —— 预览壳（variantIndex/variants props + active computed + v-bind）
 - __tests__/<Name>.spec.ts —— 3-5 项冒烟测试
 

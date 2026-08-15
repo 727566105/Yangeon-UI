@@ -3,6 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createProjectContext } from '../context'
+import { findRepoRoot } from '../root'
 import type { RegistryEntry } from '@yzen-ui/shared'
 
 // 临时仓库根（registry/ + components/ + docs/ + theme/ 最小结构）
@@ -35,6 +36,8 @@ beforeEach(() => {
   mkdirSync(join(root, 'packages/yzen-ui/src/components/button'), { recursive: true })
   mkdirSync(join(root, 'docs'), { recursive: true })
   mkdirSync(join(root, 'packages/yzen-ui/src/theme'), { recursive: true })
+  // monorepo 锚点（findRepoRoot 依赖）
+  writeFileSync(join(root, 'pnpm-workspace.yaml'), 'packages: []\n')
   writeFileSync(join(root, 'registry/categories.json'), JSON.stringify(CATEGORIES))
   writeFileSync(
     join(root, 'registry/registry.json'),
@@ -168,5 +171,118 @@ describe('ProjectContext', () => {
     const detail = ctx.getComponent('new-comp')
     expect(detail?.name.zh).toBe('新组件')
     expect(ctx.readComponentSource('new-comp')).toContain('yz-new')
+  })
+})
+
+describe('ProjectContext edge cases', () => {
+  it('degrades gracefully on an empty/incomplete project (no theme/tokens files)', () => {
+    // 空目录（无 registry/components/docs/theme）
+    const empty = mkdtempSync(join(tmpdir(), 'yz-edge-'))
+    const ctx = createProjectContext(empty)
+    expect(ctx.listComponents()).toEqual([])
+    expect(ctx.getComponent('x')).toBeNull()
+    expect(ctx.getProjectInfo().componentCount).toBe(0)
+    // 主题缺失不抛错（曾抛 ENOENT）
+    expect(() => ctx.getDesignTokens()).not.toThrow()
+    expect(ctx.getDesignTokens().light).toEqual([])
+    expect(ctx.readDocs()).toEqual([])
+    expect(ctx.getStyleGuide().length).toBeGreaterThan(50)
+    rmSync(empty, { recursive: true, force: true })
+  })
+
+  it('handles a corrupted registry.json without crashing', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'yz-edge-'))
+    mkdirSync(join(dir, 'registry'))
+    writeFileSync(join(dir, 'registry/registry.json'), '{ broken json !!!')
+    const ctx = createProjectContext(dir)
+    expect(ctx.listComponents()).toEqual([])
+    expect(ctx.getComponent('button')).toBeNull()
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('returns null for missing sources and demos', () => {
+    const ctx = createProjectContext(root)
+    expect(ctx.readComponentSource('ghost')).toBeNull()
+    expect(ctx.readDemoSource('ghost')).toBeNull()
+  })
+
+  it('treats limit 0 / negative as unlimited, empty keyword as no filter', () => {
+    const ctx = createProjectContext(root)
+    expect(ctx.listComponents({ limit: 0 })).toHaveLength(1)
+    expect(ctx.listComponents({ limit: -5 })).toHaveLength(1)
+    expect(ctx.listComponents({ keyword: '' })).toHaveLength(1)
+    expect(ctx.listComponents({ category: 'nope' })).toHaveLength(0)
+  })
+
+  it('findRepoRoot returns null when no workspace anchor exists', () => {
+    // /tmp 无 pnpm-workspace.yaml（在任意无锚点临时目录验证）
+    const dir = mkdtempSync(join(tmpdir(), 'yz-noanchor-'))
+    expect(findRepoRoot(dir)).toBeNull()
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('findRepoRoot finds the repo from a nested package dir', () => {
+    const found = findRepoRoot(join(root, 'packages/yzen-ui/src/components/button'))
+    expect(found).toBe(root)
+  })
+})
+
+describe('ProjectContext coverage', () => {
+  it('P0: categories.json 损坏时优雅降级（分类归零、组件读取不受影响）', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'yz-cat-'))
+    mkdirSync(join(dir, 'registry'), { recursive: true })
+    // 损坏的分类文件 + 正常的 registry + monorepo 锚点
+    writeFileSync(join(dir, 'registry/categories.json'), 'broken{')
+    writeFileSync(join(dir, 'registry/registry.json'), JSON.stringify([makeEntry(1)]))
+    writeFileSync(join(dir, 'pnpm-workspace.yaml'), 'packages: []\n')
+    const ctx = createProjectContext(dir)
+    // 损坏分类被降级为空数组
+    expect(ctx.getProjectInfo().categoryCount).toBe(0)
+    // 组件读取不受分类影响
+    expect(() => ctx.listComponents()).not.toThrow()
+    expect(ctx.listComponents()).toHaveLength(1)
+    expect(() => ctx.getComponent('button')).not.toThrow()
+    expect(ctx.getComponent('button')?.key).toBe('button')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('P1: 组件目录多个 .vue 文件时 componentFile 取字母序第一个', () => {
+    mkdirSync(join(root, 'packages/yzen-ui/src/components/multi'), { recursive: true })
+    writeFileSync(
+      join(root, 'packages/yzen-ui/src/components/multi/Aaa.vue'),
+      '<template><div class="yz-aaa">A</div></template>\n',
+    )
+    writeFileSync(
+      join(root, 'packages/yzen-ui/src/components/multi/Zzz.vue'),
+      '<template><div class="yz-zzz">Z</div></template>\n',
+    )
+    const entries = JSON.parse(readFileSync(join(root, 'registry/registry.json'), 'utf8')) as RegistryEntry[]
+    entries.push(makeEntry(99, { key: 'multi', name: { zh: '多文件组件', en: 'Multi File' } }))
+    writeFileSync(join(root, 'registry/registry.json'), JSON.stringify(entries))
+    const ctx = createProjectContext(root)
+    const detail = ctx.getComponent('multi')
+    expect(detail).not.toBeNull()
+    // readdirSync 字母序第一个（排除 demo.vue 后）
+    expect(detail?.componentFile).toBe('Aaa.vue')
+  })
+
+  it('P5: 100+ 组件 list 耗时基线（宽松 <200ms，仅断言合理而非精确性能）', () => {
+    const entries = Array.from({ length: 120 }, (_, i) => makeEntry(i + 1))
+    writeFileSync(join(root, 'registry/registry.json'), JSON.stringify(entries))
+    const ctx = createProjectContext(root)
+
+    let t0 = performance.now()
+    const ai = ctx.listComponents({ category: 'ai' })
+    const aiMs = performance.now() - t0
+    expect(ai).toHaveLength(60)
+
+    t0 = performance.now()
+    const limited = ctx.listComponents({ limit: 10 })
+    const limitMs = performance.now() - t0
+    expect(limited).toHaveLength(10)
+
+    // 宽松阈值防 CI 抖动
+    expect(aiMs).toBeLessThan(200)
+    expect(limitMs).toBeLessThan(200)
   })
 })

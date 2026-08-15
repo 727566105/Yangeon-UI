@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*.ts", "bin/**/*.mjs"],
+  "compilerOptions": { "types": ["node", "vite/client"], "allowImportingTsExtensions": true }
+}
