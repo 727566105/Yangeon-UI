@@ -82,6 +82,25 @@ importers:
         specifier: ^3.0.0
         version: 3.2.7(@types/node@22.20.1)(happy-dom@16.8.1)(sass@1.102.0)
 
+  packages/registry-core:
+    dependencies:
+      '@yzen-ui/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.20.1
+        version: 22.20.1
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vite:
+        specifier: ^6.4.3
+        version: 6.4.3(@types/node@22.20.1)(sass@1.102.0)
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.7(@types/node@22.20.1)(happy-dom@16.8.1)(sass@1.102.0)
+
   packages/shared:
     devDependencies:
       '@vitejs/plugin-vue':
