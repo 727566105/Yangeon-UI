@@ -22,4 +22,30 @@ describe('registry', () => {
     const bad: RegistryEntry = { ...registryEntries[0], key: 'ghost', source: 'components/ghost' }
     expect(validateRegistry([bad], ['button']).ok).toBe(false)
   })
+
+  it('detects variants without id', () => {
+    const bad: RegistryEntry = {
+      ...registryEntries[0],
+      variants: [{ id: '', props: {} }],
+    }
+    expect(validateRegistry([bad], ['button']).ok).toBe(false)
+  })
+
+  it('detects duplicate variant ids within one entry', () => {
+    const bad: RegistryEntry = {
+      ...registryEntries[0],
+      variants: [
+        { id: 'solid', props: {} },
+        { id: 'solid', props: {} },
+      ],
+    }
+    expect(validateRegistry([bad], ['button']).ok).toBe(false)
+  })
+
+  it('registry entries keep stable ids matching i18n variant labels', () => {
+    for (const e of registryEntries) {
+      const ids = e.variants.map((v) => v.id)
+      expect(new Set(ids).size).toBe(ids.length)
+    }
+  })
 })

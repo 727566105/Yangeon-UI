@@ -1,17 +1,18 @@
 import registryJson from '../../../registry/registry.json'
 import type { Component } from 'vue'
 
+// 注册表只承载数据（key/category/order/visible/source/variants.id+props）；
+// 展示文案（name/description/tags/变体 label）已迁至 i18n messages（registry.entries.<key>），
+// 由 useI18n().t() 按 key 查询，中文文案与英文一一对应。
 export interface Variant {
-  label: string
+  /** 变体标识（同 entry 内唯一），用于 i18n 查 label：registry.entries.<key>.variants.<id> */
+  id: string
   props: Record<string, unknown>
 }
 
 export interface RegistryEntry {
   key: string
-  name: string
-  description: string
   category: string
-  tags: string[]
   order: number
   visible: boolean
   source: string
@@ -57,8 +58,11 @@ export function validateRegistry(
     if (!available.includes(e.key)) errors.push(`registry 引用了不存在的组件: ${e.key} (source: ${e.source})`)
     if (!Number.isInteger(e.order)) errors.push(`order 必须为整数: ${e.key}`)
     if (e.variants.length === 0) errors.push(`组件 ${e.key} 至少需要一个变体`)
+    const variantIds = new Set<string>()
     for (const v of e.variants) {
-      if (!v.label) errors.push(`组件 ${e.key} 存在无 label 的变体`)
+      if (!v.id) errors.push(`组件 ${e.key} 存在无 id 的变体`)
+      if (variantIds.has(v.id)) errors.push(`组件 ${e.key} 存在重复变体 id: ${v.id}`)
+      variantIds.add(v.id)
     }
   }
   return errors.length ? { ok: false, errors } : { ok: true }
@@ -69,9 +73,3 @@ export const registryEntries: RegistryEntry[] = (registryJson as RegistryEntry[]
   .sort((a, b) => a.order - b.order)
 
 export const componentMap = buildComponentMap()
-
-export const CATEGORY_LABELS: Record<string, string> = {
-  basic: '基础组件',
-  ai: 'AI 场景',
-  advanced: '进阶组件',
-}

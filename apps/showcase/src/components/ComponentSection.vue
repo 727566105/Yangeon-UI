@@ -4,12 +4,22 @@ import type { Component } from 'vue'
 import VariantSwitcher from './VariantSwitcher.vue'
 import { YzIcon } from 'yzen-ui'
 import type { RegistryEntry } from '../registry'
+import { useI18n } from '../i18n'
 
 const props = defineProps<{ entry: RegistryEntry; component: Component; index: number }>()
+const { t, tList } = useI18n()
 
 const activeVariant = ref(0)
 const copied = ref(false)
 const viewCodeOpen = ref(false)
+
+// 变体切换显示名（label 迁至 i18n messages：registry.entries.<key>.variants.<id>）
+const displayVariants = computed(() =>
+  props.entry.variants.map((v) => ({
+    ...v,
+    label: t(`registry.entries.${props.entry.key}.variants.${v.id}`),
+  })),
+)
 
 // 入场动画 stagger（beautifului: fade-up 600ms，60ms 递增延迟）
 const sectionStyle = computed(() => ({
@@ -26,28 +36,34 @@ const demoLoaders = import.meta.glob(
 const demos = Object.fromEntries(
   Object.entries(demoLoaders).map(([path, loader]) => [
     path,
-    defineAsyncComponent(loader as () => Promise<unknown>),
+    // import.meta.glob 类型为 () => Promise<unknown>，defineAsyncComponent 需要 () => Promise<Component>
+    defineAsyncComponent(loader as unknown as () => Promise<Component>),
   ]),
 )
 const currentDemo = computed(
   () => demos[`../../../../packages/yzen-ui/src/components/${props.entry.key}/demo.vue`],
 )
 
-// demo 源码（构建期 ?raw 注入，用于复制代码与查看代码）
-const demoModules = import.meta.glob(
-  '../../../../packages/yzen-ui/src/components/*/demo.vue',
+// 组件源码（构建期 ?raw 注入，用于复制代码与查看代码）
+// 展示完整组件实现文件（<Name>.vue），而非薄壳 demo.vue（对齐 beautifului 的 View code：
+// 用户看到的是组件本体源码，demo.vue 只有一层 v-bind 转发没有参考价值）
+const componentModules = import.meta.glob(
+  '../../../../packages/yzen-ui/src/components/*/*.vue',
   { query: '?raw', import: 'default', eager: true },
 )
 
-const demoSource = computed(() => {
-  const key = Object.keys(demoModules).find((p) => p.includes(`/${props.entry.key}/demo.vue`))
-  return key ? (demoModules[key] as string) : ''
+const componentSource = computed(() => {
+  const match = Object.entries(componentModules).find(
+    ([p]) => p.includes(`/${props.entry.key}/`) && !p.endsWith('/demo.vue'),
+  )
+  const path = match?.[0] ?? ''
+  return { filename: path.split('/').pop() ?? '', source: (match?.[1] as string) ?? '' }
 })
 
 async function copyCode() {
-  if (!demoSource.value) return
+  if (!componentSource.value.source) return
   try {
-    await navigator.clipboard.writeText(demoSource.value)
+    await navigator.clipboard.writeText(componentSource.value.source)
     copied.value = true
     setTimeout(() => (copied.value = false), 1500)
   } catch {
@@ -65,14 +81,14 @@ async function copyCode() {
     <div class="component-section__head">
       <span class="component-section__num">{{ String(entry.order).padStart(2, '0') }}</span>
       <div class="component-section__title-wrap">
-        <h3 class="component-section__name">{{ entry.name }}</h3>
+        <h3 class="component-section__name">{{ t(`registry.entries.${entry.key}.name`) }}</h3>
         <span
-          v-for="tag in entry.tags"
+          v-for="tag in tList(`registry.entries.${entry.key}.tags`)"
           :key="tag"
           class="component-section__tag"
         >{{ tag }}</span>
       </div>
-      <p class="component-section__desc">{{ entry.description }}</p>
+      <p class="component-section__desc">{{ t(`registry.entries.${entry.key}.description`) }}</p>
     </div>
 
     <div class="component-section__surface">
@@ -86,7 +102,7 @@ async function copyCode() {
 
       <VariantSwitcher
         v-model="activeVariant"
-        :variants="entry.variants"
+        :variants="displayVariants"
         class="component-section__switcher"
       />
 
@@ -95,8 +111,8 @@ async function copyCode() {
         <button
           class="component-section__action"
           type="button"
-          :aria-label="copied ? '已复制' : '复制代码'"
-          :title="copied ? '已复制' : '复制代码'"
+          :aria-label="copied ? t('section.copied') : t('section.copyCode')"
+          :title="copied ? t('section.copied') : t('section.copyCode')"
           @click="copyCode"
         >
           <YzIcon :name="copied ? 'check' : 'copy'" :size="14" />
@@ -104,8 +120,8 @@ async function copyCode() {
         <button
           class="component-section__action"
           type="button"
-          aria-label="查看代码"
-          title="查看代码"
+          :aria-label="t('section.viewCode')"
+          :title="t('section.viewCode')"
           @click="viewCodeOpen = true"
         >
           <YzIcon name="chevron-right" :size="14" />
@@ -113,44 +129,45 @@ async function copyCode() {
       </div>
     </div>
 
-    <!-- 查看代码弹窗（beautifului: View code 面板） -->
+    <!-- 查看代码弹窗（对齐 beautifului.dev View code 实测样式：黑30%+blur2px 遮罩 / 768px·85vh 面板 / 实心复制钮 / 方形关闭钮） -->
     <Teleport to="body">
       <div
         v-if="viewCodeOpen"
         class="code-viewer"
         role="dialog"
         aria-modal="true"
-        aria-label="查看代码"
-        @click.self="viewCodeOpen = false"
+        :aria-label="t('section.viewCode')"
       >
+        <div class="code-viewer__backdrop" aria-hidden="true" @click="viewCodeOpen = false" />
         <div class="code-viewer__panel">
           <div class="code-viewer__bar">
-            <span class="code-viewer__file">
-              <span class="code-viewer__filename">{{ entry.key }}/demo.vue</span>
-              <span class="code-viewer__lang">Vue SFC</span>
-            </span>
-            <span class="code-viewer__controls">
+            <div class="code-viewer__file">
+              <h3 class="code-viewer__title">{{ t(`registry.entries.${entry.key}.name`) }}</h3>
+              <p class="code-viewer__path">components/{{ entry.key }}/{{ componentSource.filename }}</p>
+            </div>
+            <div class="code-viewer__controls">
               <button
-                class="code-viewer__btn"
+                class="code-viewer__copy-btn"
                 type="button"
-                :aria-label="copied ? '已复制' : '复制代码'"
+                :aria-label="copied ? t('section.copied') : t('section.copyCode')"
                 @click="copyCode"
               >
-                <YzIcon :name="copied ? 'check' : 'copy'" :size="13" />
-                {{ copied ? '已复制' : '复制' }}
+                <YzIcon :name="copied ? 'check' : 'copy'" :size="14" />
+                {{ copied ? t('section.copied') : t('section.copy') }}
               </button>
               <button
-                class="code-viewer__btn"
+                class="code-viewer__icon-btn"
                 type="button"
-                aria-label="关闭"
+                :aria-label="t('section.close')"
                 @click="viewCodeOpen = false"
               >
-                <YzIcon name="close" :size="13" />
-                关闭
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
               </button>
-            </span>
+            </div>
           </div>
-          <pre class="code-viewer__pre"><code>{{ demoSource }}</code></pre>
+          <pre class="code-viewer__pre"><code>{{ componentSource.source }}</code></pre>
         </div>
       </div>
     </Teleport>
@@ -285,7 +302,9 @@ async function copyCode() {
 </style>
 
 <style>
-/* 查看代码弹窗（非 scoped：Teleport 到 body） */
+/* 查看代码弹窗（非 scoped：Teleport 到 body）——样式对齐 beautifului.dev View code 实测值：
+   overlay p-4/sm:p-8 + 独立背板 bg-black/30 backdrop-blur(2px)；
+   面板 max-w-3xl(768px) max-h-[85vh] rounded-window(14px) shadow-overlay pop-in 250ms； */
 .code-viewer {
   position: fixed;
   inset: 0;
@@ -293,19 +312,32 @@ async function copyCode() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
-  animation: yz-fade-in 180ms ease-out both;
+  padding: 16px;
+}
+@media (min-width: 640px) {
+  .code-viewer { padding: 32px; }
+}
+.code-viewer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 .code-viewer__panel {
+  position: relative;
   display: flex;
   flex-direction: column;
-  width: min(720px, calc(100vw - 48px));
-  max-height: min(560px, calc(100vh - 96px));
-  border-radius: var(--yz-radius-card);
+  width: 100%;
+  max-width: 768px;
+  max-height: 85vh;
+  border-radius: var(--yz-radius-window);
   background: var(--yz-surface);
   box-shadow: var(--yz-shadow-overlay);
   overflow: hidden;
+  animation: yz-pop-in 250ms var(--yz-ease-out-strong) both;
 }
+/* 顶栏（primitive-card-bar：flex items-center justify-between gap-3 border-b border-line） */
 .code-viewer__bar {
   display: flex;
   align-items: center;
@@ -315,52 +347,82 @@ async function copyCode() {
   border-bottom: 1px solid var(--yz-line);
 }
 .code-viewer__file {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
   min-width: 0;
 }
-.code-viewer__filename {
-  font-family: var(--yz-font-mono);
-  font-size: 12px;
-  font-weight: 500;
+.code-viewer__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
   color: var(--yz-ink);
 }
-.code-viewer__lang {
+.code-viewer__path {
+  margin: 0;
+  font-family: var(--yz-font-mono);
   font-size: 11.5px;
+  line-height: 1.5;
+  letter-spacing: -0.14px;
   color: var(--yz-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .code-viewer__controls {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
-.code-viewer__btn {
+/* 复制按钮（beautifului: h-7 bg-ink text-canvas rounded-control px-2.5 + 内高光 + active 按压） */
+.code-viewer__copy-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 24px;
-  padding: 0 8px;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
   border: none;
-  border-radius: 6px;
-  background: transparent;
-  font-size: 11.5px;
+  border-radius: var(--yz-radius-control);
+  background: var(--yz-ink);
+  color: var(--yz-canvas);
+  font-family: inherit;
+  font-size: 12.5px;
   font-weight: 500;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 1px 2px rgba(16, 24, 40, 0.1);
+  transition: transform 150ms var(--yz-ease-out-strong);
+}
+.code-viewer__copy-btn:active { transform: scale(0.98); }
+/* 关闭按钮（beautifului: primitive-icon-button size-7，hover bg-hover text-ink） */
+.code-viewer__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--yz-radius-control);
+  background: transparent;
   color: var(--yz-ink-3);
   cursor: pointer;
-  transition: background-color 100ms var(--yz-ease-out-strong), color 100ms var(--yz-ease-out-strong);
+  transition: background-color 150ms var(--yz-ease-out-strong), color 150ms var(--yz-ease-out-strong);
 }
-.code-viewer__btn:hover {
+.code-viewer__icon-btn:hover {
   background: var(--yz-hover);
   color: var(--yz-ink);
 }
+/* 代码区（beautifului: flex-1 bg-inset p-4 text-[12px] text-ink-2）
+   字体对齐 GitHub 代码页实测：ui-monospace → SF Mono → Menlo → Consolas 系统等宽栈，
+   而非页面品牌字体 JetBrains Mono（代码展示语境用"现场代码字体"） */
 .code-viewer__pre {
+  flex: 1;
   margin: 0;
   padding: 16px;
   overflow: auto;
   background: var(--yz-inset);
-  font-family: var(--yz-font-mono);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   font-size: 12px;
-  line-height: 1.7;
+  line-height: 20px;
   color: var(--yz-ink-2);
   white-space: pre;
 }

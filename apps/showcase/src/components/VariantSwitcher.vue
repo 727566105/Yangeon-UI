@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import type { Variant } from '../registry'
+import { useI18n } from '../i18n'
 
-defineProps<{ variants: Variant[]; modelValue: number }>()
+// 显示变体：注册表数据 + i18n 计算出的 label（由 ComponentSection 提供）
+defineProps<{ variants: Array<Variant & { label: string }>; modelValue: number }>()
 defineEmits<{ (e: 'update:modelValue', v: number): void }>()
+const { t } = useI18n()
 </script>
 
 <template>
-  <div class="variant-switcher" role="tablist" aria-label="变体切换">
+  <div class="variant-switcher" role="tablist" :aria-label="t('switcher.aria')">
     <button
       v-for="(v, i) in variants"
       :key="v.label"

@@ -1,37 +1,31 @@
 [
   {
     "key": "button",
-    "name": "Button 按钮",
-    "description": "发光、渐变、AI 加载状态一应俱全的按钮",
     "category": "basic",
-    "tags": [
-      "基础",
-      "交互"
-    ],
     "order": 1,
     "visible": true,
     "source": "components/button",
     "variants": [
       {
-        "label": "Solid",
+        "id": "solid",
         "props": {
           "type": "solid"
         }
       },
       {
-        "label": "Outline",
+        "id": "outline",
         "props": {
           "type": "outline"
         }
       },
       {
-        "label": "Glow",
+        "id": "glow",
         "props": {
           "type": "glow"
         }
       },
       {
-        "label": "AI Loading",
+        "id": "ai-loading",
         "props": {
           "type": "glow",
           "loading": true
@@ -41,32 +35,26 @@
   },
   {
     "key": "input",
-    "name": "Input 输入框",
-    "description": "磨砂质感、聚焦发光边框、一键智能清空",
     "category": "basic",
-    "tags": [
-      "基础",
-      "表单"
-    ],
     "order": 2,
     "visible": true,
     "source": "components/input",
     "variants": [
       {
-        "label": "Default",
+        "id": "default",
         "props": {
           "placeholder": "Ask AI anything…"
         }
       },
       {
-        "label": "Clearable",
+        "id": "clearable",
         "props": {
           "placeholder": "Type to clear…",
           "clearable": true
         }
       },
       {
-        "label": "Search",
+        "id": "search",
         "props": {
           "type": "search",
           "placeholder": "Search models…",
@@ -77,35 +65,29 @@
   },
   {
     "key": "card",
-    "name": "Card 卡片",
-    "description": "玻璃拟态、光影渐变、悬浮抬升的容器",
     "category": "basic",
-    "tags": [
-      "基础",
-      "容器"
-    ],
     "order": 3,
     "visible": true,
     "source": "components/card",
     "variants": [
       {
-        "label": "Default",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "Glass",
+        "id": "glass",
         "props": {
           "variant": "glass"
         }
       },
       {
-        "label": "Gradient",
+        "id": "gradient",
         "props": {
           "variant": "gradient"
         }
       },
       {
-        "label": "Hoverable",
+        "id": "hoverable",
         "props": {
           "hoverable": true
         }
@@ -114,32 +96,26 @@
   },
   {
     "key": "icon",
-    "name": "Icon 图标",
-    "description": "20 枚内置线性科技图标，随字重与主题变色",
     "category": "basic",
-    "tags": [
-      "基础",
-      "图形"
-    ],
     "order": 4,
     "visible": true,
     "source": "components/icon",
     "variants": [
       {
-        "label": "Default",
+        "id": "default",
         "props": {
           "name": "sparkles"
         }
       },
       {
-        "label": "AI Sparkles",
+        "id": "ai-sparkles",
         "props": {
           "name": "sparkles",
           "size": 32
         }
       },
       {
-        "label": "Loading",
+        "id": "loading",
         "props": {
           "name": "loading",
           "size": 32
@@ -149,23 +125,17 @@
   },
   {
     "key": "layout",
-    "name": "Layout 布局",
-    "description": "容器 + 24 栅格，响应式断点自由组合",
     "category": "basic",
-    "tags": [
-      "基础",
-      "布局"
-    ],
     "order": 5,
     "visible": true,
     "source": "components/layout",
     "variants": [
       {
-        "label": "Grid",
+        "id": "grid",
         "props": {}
       },
       {
-        "label": "Gutter",
+        "id": "gutter",
         "props": {
           "gutter": 16
         }
@@ -174,29 +144,23 @@
   },
   {
     "key": "typography",
-    "name": "Typography 排版",
-    "description": "统一科技风文本与标题，七阶色、四级字号",
     "category": "basic",
-    "tags": [
-      "基础",
-      "文字"
-    ],
     "order": 6,
     "visible": true,
     "source": "components/typography",
     "variants": [
       {
-        "label": "Default",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "Secondary",
+        "id": "secondary",
         "props": {
           "type": "secondary"
         }
       },
       {
-        "label": "Accent",
+        "id": "accent",
         "props": {
           "type": "accent"
         }
@@ -205,31 +169,25 @@
   },
   {
     "key": "ai-loading",
-    "name": "AI Loading 智能加载",
-    "description": "像素波浪、点阵跳动、轨道旋转三形态 AI 加载器，渐变扫光文字与计时",
     "category": "ai",
-    "tags": [
-      "AI",
-      "加载"
-    ],
     "order": 7,
     "visible": true,
     "source": "components/ai-loading",
     "variants": [
       {
-        "label": "Drive",
+        "id": "drive",
         "props": {
           "variant": "drive"
         }
       },
       {
-        "label": "Dots",
+        "id": "dots",
         "props": {
           "variant": "dots"
         }
       },
       {
-        "label": "Orbit",
+        "id": "orbit",
         "props": {
           "variant": "orbit"
         }
@@ -238,23 +196,17 @@
   },
   {
     "key": "code-block",
-    "name": "Code Block 代码块",
-    "description": "Agent 生成的代码逐行流式入场，文件头与一键复制",
     "category": "ai",
-    "tags": [
-      "AI",
-      "代码"
-    ],
     "order": 8,
     "visible": true,
     "source": "components/code-block",
     "variants": [
       {
-        "label": "TypeScript",
+        "id": "typescript",
         "props": {}
       },
       {
-        "label": "Python",
+        "id": "python",
         "props": {
           "filename": "predict.py",
           "language": "Python",
@@ -262,7 +214,7 @@
         }
       },
       {
-        "label": "No Stream",
+        "id": "no-stream",
         "props": {
           "streaming": false
         }
@@ -271,25 +223,19 @@
   },
   {
     "key": "thinking",
-    "name": "Thinking 思考过程",
-    "description": "可折叠的推理步骤——思考、检索、编码与完成状态，等宽时间戳与渐变扫光标题",
     "category": "ai",
-    "tags": [
-      "AI",
-      "推理"
-    ],
     "order": 9,
     "visible": true,
     "source": "components/thinking",
     "variants": [
       {
-        "label": "Collapsed",
+        "id": "collapsed",
         "props": {
           "expanded": false
         }
       },
       {
-        "label": "Expanded",
+        "id": "expanded",
         "props": {
           "expanded": true
         }
@@ -298,23 +244,17 @@
   },
   {
     "key": "tool-chips",
-    "name": "Tool Chips 工具调用",
-    "description": "Agent 代码编辑与函数调用的紧凑 chips，带计数摘要的可折叠列表",
     "category": "ai",
-    "tags": [
-      "AI",
-      "工具"
-    ],
     "order": 10,
     "visible": true,
     "source": "components/tool-chips",
     "variants": [
       {
-        "label": "Expanded",
+        "id": "expanded",
         "props": {}
       },
       {
-        "label": "Collapsed",
+        "id": "collapsed",
         "props": {
           "expanded": false
         }
@@ -323,30 +263,24 @@
   },
   {
     "key": "prompt-bar",
-    "name": "Prompt Bar 输入条",
-    "description": "带附件、模型选择、语音与发送的 AI 输入条，textarea 自动高度",
     "category": "ai",
-    "tags": [
-      "AI",
-      "输入"
-    ],
     "order": 11,
     "visible": true,
     "source": "components/prompt-bar",
     "variants": [
       {
-        "label": "Default",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "Aurora",
+        "id": "aurora",
         "props": {
           "placeholder": "Ask Aurora…",
           "model": "Aurora 1"
         }
       },
       {
-        "label": "Pill",
+        "id": "pill",
         "props": {
           "shape": "pill"
         }
@@ -355,30 +289,24 @@
   },
   {
     "key": "streaming-text",
-    "name": "Streaming Text 流式文本",
-    "description": "打字机逐段揭示的回答文本，光标闪烁、来源折叠面板与追问建议，完成后浮现操作按钮",
     "category": "ai",
-    "tags": [
-      "AI",
-      "流式"
-    ],
     "order": 12,
     "visible": true,
     "source": "components/streaming-text",
     "variants": [
       {
-        "label": "Streaming",
+        "id": "streaming",
         "props": {}
       },
       {
-        "label": "Fast",
+        "id": "fast",
         "props": {
           "speed": 8,
           "chunkSize": 5
         }
       },
       {
-        "label": "Complete",
+        "id": "complete",
         "props": {
           "streaming": false
         }
@@ -387,29 +315,23 @@
   },
   {
     "key": "chat-composer",
-    "name": "Chat Composer 对话输入区",
-    "description": "带标签页、推理消息与多行输入发送的对话面板，发送后自动追加消息与模拟回复",
     "category": "ai",
-    "tags": [
-      "AI",
-      "对话"
-    ],
     "order": 13,
     "visible": true,
     "source": "components/chat-composer",
     "variants": [
       {
-        "label": "Default",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "Sensors",
+        "id": "sensors",
         "props": {
           "tab": "sensors"
         }
       },
       {
-        "label": "No Reply",
+        "id": "no-reply",
         "props": {
           "replyText": null
         }
@@ -418,25 +340,19 @@
   },
   {
     "key": "approval-card",
-    "name": "Approval Card 审批卡片",
-    "description": "AI 行动前的人工确认卡片：选项单选或自定义回复，待处理与已批准两种按钮态",
     "category": "ai",
-    "tags": [
-      "AI",
-      "审批"
-    ],
     "order": 14,
     "visible": true,
     "source": "components/approval-card",
     "variants": [
       {
-        "label": "待处理",
+        "id": "pending",
         "props": {
           "status": "pending"
         }
       },
       {
-        "label": "已批准",
+        "id": "approved",
         "props": {
           "status": "approved",
           "selected": 0
@@ -446,25 +362,19 @@
   },
   {
     "key": "task-rows",
-    "name": "Task Rows 任务行",
-    "description": "AI 任务实时状态列表：已完成勾选、执行中旋转进度环、排队圆环，明细可折叠",
     "category": "ai",
-    "tags": [
-      "AI",
-      "任务"
-    ],
     "order": 15,
     "visible": true,
     "source": "components/task-rows",
     "variants": [
       {
-        "label": "Capsules",
+        "id": "capsules",
         "props": {
           "variant": "capsules"
         }
       },
       {
-        "label": "List",
+        "id": "list",
         "props": {
           "variant": "list"
         }
@@ -473,25 +383,19 @@
   },
   {
     "key": "search",
-    "name": "Search 指令搜索",
-    "description": "命令式搜索卡片：实时过滤结果与空状态，支持 ⌘K 或 / 快捷键聚焦",
     "category": "ai",
-    "tags": [
-      "AI",
-      "搜索"
-    ],
     "order": 16,
     "visible": true,
     "source": "components/search",
     "variants": [
       {
-        "label": "有结果",
+        "id": "with-results",
         "props": {
           "modelValue": ""
         }
       },
       {
-        "label": "空状态",
+        "id": "empty",
         "props": {
           "modelValue": "zzz"
         }
@@ -500,23 +404,17 @@
   },
   {
     "key": "context-cards",
-    "name": "Context Cards 上下文卡片",
-    "description": "检索知识分块列表：标题与字符数栏、正文与来源附件胶囊（PDF/CSV 徽章），入场错峰动画",
     "category": "ai",
-    "tags": [
-      "AI",
-      "上下文"
-    ],
     "order": 17,
     "visible": true,
     "source": "components/context-cards",
     "variants": [
       {
-        "label": "Default",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "Three chunks",
+        "id": "three-chunks",
         "props": {
           "count": 42,
           "chunks": [
@@ -554,7 +452,7 @@
         }
       },
       {
-        "label": "Static",
+        "id": "static",
         "props": {
           "animated": false
         }
@@ -563,29 +461,23 @@
   },
   {
     "key": "recommendation-card",
-    "name": "Recommendation Card 推荐卡片",
-    "description": "Agent 建议与置信度计量条，备选方案可折叠面板与一键接受",
     "category": "ai",
-    "tags": [
-      "AI",
-      "建议"
-    ],
     "order": 18,
     "visible": true,
     "source": "components/recommendation-card",
     "variants": [
       {
-        "label": "Default",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "Alternatives",
+        "id": "alternatives",
         "props": {
           "expanded": true
         }
       },
       {
-        "label": "Low confidence",
+        "id": "low-confidence",
         "props": {
           "confidenceLevel": 1,
           "confidenceLabel": "Low confidence"
@@ -595,29 +487,23 @@
   },
   {
     "key": "insight-cards",
-    "name": "Insight Cards 洞察卡片",
-    "description": "分页式 Agent 洞察：提及与数据高亮正文、双序列实时趋势图（图例可开关）与追问建议",
     "category": "ai",
-    "tags": [
-      "AI",
-      "洞察"
-    ],
     "order": 19,
     "visible": true,
     "source": "components/insight-cards",
     "variants": [
       {
-        "label": "Default",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "Static chart",
+        "id": "static-chart",
         "props": {
           "live": false
         }
       },
       {
-        "label": "Five insights",
+        "id": "five-insights",
         "props": {
           "insights": [
             {
@@ -837,29 +723,23 @@
   },
   {
     "key": "diff-table",
-    "name": "Diff Table 差异表格",
-    "description": "AI 提议的表格变更：点击行接受/撤销（供应商划线删除），底部建议插入行可折叠预览",
     "category": "ai",
-    "tags": [
-      "AI",
-      "表格"
-    ],
     "order": 20,
     "visible": true,
     "source": "components/diff-table",
     "variants": [
       {
-        "label": "默认",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "展开建议",
+        "id": "expanded",
         "props": {
           "expanded": true
         }
       },
       {
-        "label": "空数据",
+        "id": "empty",
         "props": {
           "rows": [],
           "proposed": null
@@ -869,29 +749,23 @@
   },
   {
     "key": "filter-table",
-    "name": "Filter Table 可筛选表格",
-    "description": "状态 chips 实时重组数据：未命中行折叠退场，筛选计数自动计算，空结果有守卫",
     "category": "ai",
-    "tags": [
-      "AI",
-      "表格"
-    ],
     "order": 21,
     "visible": true,
     "source": "components/filter-table",
     "variants": [
       {
-        "label": "默认",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "已完成筛选",
+        "id": "done",
         "props": {
           "modelValue": "done"
         }
       },
       {
-        "label": "空数据",
+        "id": "empty",
         "props": {
           "rows": []
         }
@@ -900,29 +774,23 @@
   },
   {
     "key": "sidebar-nav",
-    "name": "Sidebar Nav 侧边导航",
-    "description": "工作区导航：选中态滑动指示条、工作区切换折叠菜单、Quick search 实时过滤与 / 快捷键",
     "category": "ai",
-    "tags": [
-      "AI",
-      "导航"
-    ],
     "order": 22,
     "visible": true,
     "source": "components/sidebar-nav",
     "variants": [
       {
-        "label": "默认",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "磁暴监测组",
+        "id": "storm",
         "props": {
           "workspace": "storm"
         }
       },
       {
-        "label": "空分组",
+        "id": "empty-group",
         "props": {
           "items": []
         }
@@ -931,23 +799,17 @@
   },
   {
     "key": "records-table",
-    "name": "Records Table 记录表格",
-    "description": "极光观测记录数据表格，等宽数据元素与状态徽章",
     "category": "ai",
-    "tags": [
-      "AI",
-      "数据"
-    ],
     "order": 23,
     "visible": true,
     "source": "components/records-table",
     "variants": [
       {
-        "label": "默认",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "空数据",
+        "id": "empty",
         "props": {
           "records": []
         }
@@ -956,23 +818,17 @@
   },
   {
     "key": "fine-tune-card",
-    "name": "Fine-tune Card 微调卡片",
-    "description": "AI 模型微调参数控制卡，滑块与配置摘要",
     "category": "ai",
-    "tags": [
-      "AI",
-      "配置"
-    ],
     "order": 24,
     "visible": true,
     "source": "components/fine-tune-card",
     "variants": [
       {
-        "label": "默认",
+        "id": "default",
         "props": {}
       },
       {
-        "label": "训练中",
+        "id": "training",
         "props": {
           "training": true
         }
@@ -981,25 +837,19 @@
   },
   {
     "key": "selection-actions",
-    "name": "Selection Actions 选择操作",
-    "description": "选中文本后浮现的 AI 编辑操作条，描述输入与一键改写",
     "category": "ai",
-    "tags": [
-      "AI",
-      "编辑"
-    ],
     "order": 25,
     "visible": true,
     "source": "components/selection-actions",
     "variants": [
       {
-        "label": "隐藏",
+        "id": "hidden",
         "props": {
           "open": false
         }
       },
       {
-        "label": "显示",
+        "id": "visible",
         "props": {
           "open": true,
           "position": {
@@ -1009,7 +859,7 @@
         }
       },
       {
-        "label": "已输入",
+        "id": "entered",
         "props": {
           "open": true,
           "modelValue": "make it shorter"
