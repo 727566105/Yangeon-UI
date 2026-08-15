@@ -16,6 +16,14 @@ function setTheme(dark: boolean) {
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
   localStorage.setItem('yz-theme', dark ? 'dark' : 'light')
 }
+
+// 导航锚点点击：目标 hash 与当前 URL hash 相同时（用户滑到底部再点当前区块），
+// 浏览器不会触发滚动（hash 未变化），需手动 scrollIntoView 平滑回到区块顶部。
+function onNavClick(event: MouseEvent, key: string) {
+  if (window.location.hash !== `#section-${key}`) return
+  event.preventDefault()
+  document.getElementById(`section-${key}`)?.scrollIntoView({ behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -94,6 +102,7 @@ function setTheme(dark: boolean) {
                   class="sidebar__link"
                   :class="{ 'sidebar__link--active': activeKey === e.key }"
                   :href="`#section-${e.key}`"
+                  @click="onNavClick($event, e.key)"
                 >
                   <span class="sidebar__num">{{ String(e.order).padStart(2, '0') }}</span>
                   {{ localized(e.name) }}

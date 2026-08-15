@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SiteSidebar from '../SiteSidebar.vue'
 import { setLocale } from '../../i18n'
@@ -6,6 +6,10 @@ import { setLocale } from '../../i18n'
 beforeEach(() => {
   window.localStorage.clear()
   setLocale('zh')
+})
+
+afterEach(() => {
+  window.location.hash = ''
 })
 
 describe('SiteSidebar', () => {
@@ -37,5 +41,37 @@ describe('SiteSidebar', () => {
     await wrapper.findAll('.lang-switch__item')[0].trigger('click')
     expect(wrapper.text()).toContain('基础组件')
     expect(wrapper.text()).toContain('Button 按钮')
+  })
+
+  it('scrolls to top when clicking the nav item whose hash matches current location (user at page bottom)', async () => {
+    // 场景：URL 已带 #section-button（用户曾定位到该区块），滑动到页面最底部后再点该导航项。
+    // 浏览器对「同 hash 锚点点击」不产生滚动（hash 未变化），必须手动 scrollIntoView 回顶。
+    const scrollIntoView = vi.fn()
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoView
+    window.location.hash = '#section-button'
+
+    // attachTo: 挂载到 document，并模拟真实页面的目标区块节点（真实页面由 ComponentSection 渲染）
+    const section = document.createElement('section')
+    section.id = 'section-button'
+    document.body.appendChild(section)
+    const wrapper = mount(SiteSidebar, { props: { activeKey: 'button' }, attachTo: document.body })
+    await wrapper.find('a[href="#section-button"]').trigger('click')
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
+    section.remove()
+  })
+
+  it('keeps default anchor navigation when clicking a nav item with a different hash', async () => {
+    // hash 不同的导航项走浏览器默认锚点跳转，不拦截
+    const scrollIntoView = vi.fn()
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoView
+    window.location.hash = '#section-button'
+
+    const wrapper = mount(SiteSidebar, { props: { activeKey: 'button' } })
+    await wrapper.find('a[href="#section-card"]').trigger('click')
+
+    expect(scrollIntoView).not.toHaveBeenCalled()
+    wrapper.unmount()
   })
 })
