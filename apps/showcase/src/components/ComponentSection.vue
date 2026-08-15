@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue'
 import type { Component } from 'vue'
 import VariantSwitcher from './VariantSwitcher.vue'
+import VariantTabs from './VariantTabs.vue'
+import { buildVariantSegments } from './buildVariantSegments'
 import { YzIcon } from 'yzen-ui'
 import { DemoStage } from '@yzen-ui/shared'
 import type { RegistryEntry } from '../registry'
@@ -15,13 +17,19 @@ const copied = ref(false)
 const viewCodeOpen = ref(false)
 
 // 变体切换显示名（label 来自 registry.json 双语字段，随语言响应式切换；
-// label 为空时回退 id，避免切换按钮显示空白——与 Console 编辑页预览逻辑对齐）
+// label 为空时回退 id，避免切换按钮显示空白——与 Console 编辑页预览逻辑对齐；
+// group 可选：二维切换（如样式 A/B 各含多个状态）时分段显示）
 const displayVariants = computed(() =>
   props.entry.variants.map((v) => ({
     ...v,
     label: localized(v.label) || v.id,
+    // group 双语文案均空时视为无分组（旧数据兼容）
+    group: v.group && (v.group.zh || v.group.en) ? localized(v.group) : undefined,
   })),
 )
+
+// 多样式（多段）时显示样式 tab 栏（surface 卡片外上方）；单段时无 tab，按钮组直接渲染
+const showTabs = computed(() => buildVariantSegments(displayVariants.value).length > 1)
 
 // 入场动画 stagger（beautifului: fade-up 600ms，60ms 递增延迟）
 const sectionStyle = computed(() => ({
@@ -78,6 +86,14 @@ async function copyCode() {
       <p class="component-section__desc" :title="localized(entry.description)">{{ localized(entry.description) }}</p>
     </div>
 
+    <!-- 样式 tab 栏：在 surface 卡片外（上方），先选样式再在卡片内选状态 -->
+    <VariantTabs
+      v-if="showTabs"
+      v-model="activeVariant"
+      :variants="displayVariants"
+      class="component-section__tabs"
+    />
+
     <div class="component-section__surface">
       <div class="component-section__demo">
         <DemoStage
@@ -111,7 +127,7 @@ async function copyCode() {
           :title="t('section.viewCode')"
           @click="viewCodeOpen = true"
         >
-          <YzIcon name="chevron-right" :size="14" />
+          <YzIcon name="code" :size="14" />
         </button>
       </div>
     </div>
@@ -180,12 +196,15 @@ async function copyCode() {
   -webkit-touch-callout: default;
 }
 
-/* 区块头：等宽 11px 编号 + 13px semibold 标题 + 12.5px 说明（beautifului 原样） */
+/* 区块头：等宽 11px 编号 + 13px semibold 标题 + 12.5px 说明（beautifului 原样）。
+   空间不足时描述先收缩省略（flex:1 1 0 + min-width:0 触发 ellipsis），
+   标题/标签不参与挤压（flex-shrink:0），overflow:hidden 兜底极端超长 */
 .component-section__head {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   margin-bottom: 12px;
+  overflow: hidden;
 }
 .component-section__num {
   margin-top: 2px;
@@ -199,6 +218,8 @@ async function copyCode() {
   align-items: baseline;
   gap: 8px;
   min-width: 0;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 .component-section__name {
   margin: 0;
@@ -213,12 +234,21 @@ async function copyCode() {
   white-space: nowrap;
 }
 .component-section__desc {
-  margin: 0 0 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
   font-size: 12.5px;
   color: var(--yz-ink-3);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 样式 tab 栏：surface 卡片外上方，居中与卡片内切换器对齐 */
+.component-section__tabs {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 10px;
 }
 
 /* 预览表面：对齐 beautifului —— rounded-window(14px) bg-canvas p-3 shadow-hairline min-height 272px */
@@ -244,12 +274,16 @@ async function copyCode() {
   padding-bottom: 36px;
 }
 
-/* 变体切换：预览底部居中胶囊（beautifului: absolute bottom-2.5 rounded-full bg-field p-0.5） */
+/* 变体切换：预览底部居中。left:0 right:0 让容器宽度 = surface 全宽，
+   内部由 .variant-switcher 自行 flex-wrap 居中——若用 left:50%+translateX(-50%)，
+   绝对定位可用宽度会被砍半，分组并排时放不下被迫换行 */
 .component-section__switcher {
   position: absolute;
+  left: 0;
+  right: 0;
   bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
   z-index: 1;
 }
 

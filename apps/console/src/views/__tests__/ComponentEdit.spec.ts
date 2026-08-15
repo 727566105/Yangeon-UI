@@ -125,5 +125,29 @@ describe('ComponentEdit', () => {
     const saved = mockedSave.mock.calls[0][0]
     expect(saved[0].platform).toBe('desktop')
   })
+  it('strips empty group objects from the saved payload but keeps one-sided groups', async () => {
+    const withGroup = {
+      ...ENTRY,
+      variants: [
+        { id: 'a', label: { zh: '纯文本', en: 'Plain' }, group: { zh: '样式 A', en: 'Style A' }, props: {} },
+        { id: 'b', label: { zh: '纯文本', en: 'Plain' }, group: { zh: '', en: '' }, props: {} },
+        { id: 'c', label: { zh: '折叠', en: 'Collapsed' }, group: { zh: '样式 B', en: '' }, props: {} },
+      ],
+    }
+    const wrapper = mount(ComponentEdit, {
+      props: { entry: withGroup, categories: CATEGORIES, platforms: PLATFORMS },
+    })
+    await wrapper.find('.edit__save').trigger('click')
+    await flushPromises()
+    const saved = mockedSave.mock.calls[0][0]
+    const byId = Object.fromEntries(saved[0].variants.map((v: { id: string }) => [v.id, v]))
+    // 完整分组保留
+    expect(byId.a.group).toEqual({ zh: '样式 A', en: 'Style A' })
+    // 双空 group 剥离（不落盘）
+    expect('group' in byId.b).toBe(false)
+    // 单语 group 保留
+    expect(byId.c.group).toEqual({ zh: '样式 B', en: '' })
+  })
 })
+
 

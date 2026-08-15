@@ -1,36 +1,68 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from '../i18n'
+import { buildVariantSegments, type DisplayVariant } from './buildVariantSegments'
 
-// 显示变体：由父级从 registry 双语 label 计算好当前语言的显示文本（id + label + props）
-interface DisplayVariant {
-  id: string
-  label: string
-  props: Record<string, unknown>
-}
-
-defineProps<{ variants: DisplayVariant[]; modelValue: number }>()
+const props = defineProps<{ variants: DisplayVariant[]; modelValue: number }>()
 defineEmits<{ (e: 'update:modelValue', v: number): void }>()
 const { t } = useI18n()
+
+const segments = computed(() => buildVariantSegments(props.variants))
+
+// 多段（多样式）时由 VariantTabs 负责样式选择，这里只渲染激活段的一组按钮，
+// 组标题也随之移出（标题已在 tab 栏）；单段保持原样（含左侧标题）
+const visible = computed(() => {
+  const segs = segments.value
+  if (segs.length <= 1) return segs
+  const active = segs.findIndex((seg) => seg.items.some((it) => it.index === props.modelValue))
+  return active >= 0 ? [segs[active]] : segs
+})
 </script>
 
 <template>
   <div class="variant-switcher" role="tablist" :aria-label="t('switcher.aria')">
-    <button
-      v-for="(v, i) in variants"
-      :key="v.label"
-      type="button"
-      class="variant-switcher__item"
-      :class="{ 'variant-switcher__item--active': modelValue === i }"
-      @click="$emit('update:modelValue', i)"
-    >
-      {{ v.label }}
-    </button>
+    <div v-for="(seg, si) in visible" :key="si" class="variant-switcher__segment">
+      <span v-if="seg.group && segments.length <= 1" class="variant-switcher__group">{{ seg.group }}</span>
+      <div class="variant-switcher__pills">
+        <button
+          v-for="item in seg.items"
+          :key="item.index"
+          type="button"
+          class="variant-switcher__item"
+          :class="{ 'variant-switcher__item--active': modelValue === item.index }"
+          @click="$emit('update:modelValue', item.index)"
+        >
+          {{ item.v.label }}
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-/* 对齐 beautifului：预览内底部居中胶囊 —— rounded-full bg-field p-0.5，激活项 bg-surface + shadow */
+/* 分组布局：每组 = 左侧标题（框外）+ 胶囊按钮组；多组横向排布，窄屏自动换行 */
 .variant-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 14px;
+}
+.variant-switcher__segment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* 分组标题：胶囊外的独立小字标签（nowrap 防止被 flex 压缩成竖排） */
+.variant-switcher__group {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--yz-ink-3);
+  white-space: nowrap;
+  user-select: none;
+}
+/* 按钮胶囊：对齐 beautifului —— rounded-full bg-field p-0.5，激活项 bg-surface + shadow */
+.variant-switcher__pills {
   display: inline-flex;
   align-items: center;
   gap: 2px;

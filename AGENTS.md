@@ -3,7 +3,7 @@
 ## 项目是什么
 
 **Yzen-UI**：AI 科技风个人组件库（Vue 3 + TS + SCSS + CSS Variables，pnpm monorepo）。产品 = **组件库 + Showcase 展示站 + Console 管理端 + 开发消费接入（CLI/MCP）**：
-- 展示站**忠实复刻 beautifului.dev**（视觉 token 实测自其线上 CSS，19 个 AI 组件移植自其开源组件），样式与交互细节以 beautifului.dev 为对齐基准，支持中英文切换
+- 展示站**忠实复刻 beautifului.dev**（视觉 token 实测自其线上 CSS，20 个 AI 组件移植自其开源组件），样式与交互细节以 beautifului.dev 为对齐基准，支持中英文切换
 - Console 管理端：本地 Web 应用（密码登录，`YZ_CONSOLE_PASSWORD` 环境变量，默认 123456），维护组件注册表/分类/收录
 - CLI（`yz` 命令）与 MCP（10 个只读 tools）：开发者与 AI 编程工具消费组件库内容与规范，零缓存实时跟随组件库扩展
 
@@ -24,16 +24,16 @@
 ## 目录结构
 
 ```
-packages/yzen-ui/          # 组件库（npm 包名 yzen-ui，26 个组件：6 basic + 20 AI）
+packages/yzen-ui/          # 组件库（npm 包名 yzen-ui，28 个组件：8 basic + 20 AI）
   src/theme/               # tokens-light.scss（浅色默认）/ tokens-dark.scss（html[data-theme="dark"]）
   src/styles/              # variables.scss（$yz-* 映射层）/ animations.scss（全局 keyframes）/ base.scss
   src/components/          # 每组件目录：<Name>.vue + index.ts + demo.vue + __tests__/<Name>.spec.ts
 packages/shared/           # 双端共享契约：类型 + validateRegistry/validateCategories + DemoStage 预览容器
 packages/registry-core/    # 项目感知层（CLI/MCP 共用）：组件/源码/token/文档读取，零缓存实时
-packages/cli/              # yz 命令（Node 22.18+ 原生 TS 直跑）：components/tokens/style-guide/info/docs/init
+packages/cli/              # yz 命令（Node 22.18+ 原生 TS 直跑）：components(list/get 支持 --category/--platform 筛选)/platforms/tokens/style-guide/info/docs/init
 packages/mcp-server/       # MCP stdio server（10 个只读 tools，@modelcontextprotocol/server v2）
 apps/showcase/             # 展示站（Vite 应用）：锚点导航/registry 驱动区块/变体切换/复制+查看代码/中英切换/平台（端）全局切换
-apps/console/              # 管理端（Vite 应用 + dev server 中间件本地 API）：组件/分类/收录/沙箱预览/密码登录
+apps/console/              # 管理端（Vite 应用 + dev server 中间件本地 API）：组件/分类/端/收录/开发接入/沙箱预览/密码登录；「收录组件」导航已隐藏，入口在列表页「+ 收录新组件」
 registry/registry.json     # 组件注册表单一真源（双语文案：name/description/tags/variant label 为 {zh,en}；platform 字段引用平台 key）
 registry/categories.json   # 分类清单（key + 双语 label + order，Console 可增删改排序）
 registry/platforms.json    # 平台（端）清单（key + 双语 label + order，Console 可增删改排序，展示站全局切换）
@@ -46,7 +46,7 @@ docs/                      # PRD-v2.0.md（产品需求）、research/（可行�
 pnpm install             # 安装依赖（pnpm 10，workspace）
 pnpm dev:showcase        # 展示站 dev（http://localhost:5173）
 pnpm dev:console         # 管理端 dev（http://localhost:5174，本地 API 仅本机/局域网）
-pnpm test                # 全量测试（七包 312：shared 22 + yzen-ui 136 + showcase 49 + console 58 + registry-core 22 + cli 14 + mcp 11）
+pnpm test                # 全量测试（七包 367：shared 22 + yzen-ui 154 + showcase 64 + console 80 + registry-core 22 + cli 14 + mcp 11）
 pnpm -F yzen-ui test -- src/components/<key>   # 单组件测试
 pnpm build:yzen-ui       # 组件库构建（ESM + CSS + dist/types）
 pnpm build:showcase      # 展示站构建
@@ -59,12 +59,15 @@ node packages/mcp-server/bin/yz-mcp.mjs   # MCP stdio server（Claude Desktop/Cu
 
 - **命名**：组件 `YzXxx`；CSS 类 `yz-xxx`；CSS 变量 `--yz-xxx`；SCSS 映射 `$yz-xxx`
 - **视觉铁律**：所有颜色/阴影/圆角/动效必须用 `--yz-*` 变量（浅色默认对齐 beautifului 实测 token，禁止硬编码色值）。**SCSS 映射层 variables.scss 只定义部分 `$yz-*`——引用前先查映射，缺失的用 `var(--yz-*)` 直写**（否则 sass 编译失败，vitest 不编译样式测不出）
+- **导航激活项样式**（console 导航 + showcase 侧栏共用）：白底浮起 + 1px 描边 + 左侧指示条；指示条必须**内嵌于激活项内部左缘**（渐变淡出，禁 translate 外伸——外伸会产生「被切一刀」的割裂感）；`:hover` 特异性(0-2-0)会覆盖 `--active`(0-1-0) 背景，需显式写 `.x--active:hover` 保持浮起
 - **组件四文件模式**：`<Name>.vue`（props/emits 全 TS 类型）+ `index.ts`（Yz 前缀命名导出）+ `demo.vue`（接收 `variantIndex`/`variants` props + active computed + `v-bind`）+ `__tests__/*.spec.ts`（3-5 项冒烟）
 - **demo.vue 禁止 import 包名**（循环引用），一律相对路径 `'../../index'`；**Console 收录生成的新组件 demo 壳改为相对导入组件文件**（`import YzXxx from './Xxx.vue'`，根入口静态导出不含新组件）
 - **动画**：用全局 `animations.scss` 的 `yz-*` keyframes；所有动效加 `@media (prefers-reduced-motion: reduce)` 降级
 - **受控组件铁律**：内部修改状态后必须同步 `emit('update:xxx')`；折叠动画 `grid-template-rows 0fr/1fr` + transition 常驻基础类（防瞬跳）
 - **间距/数值与源像素级一致**（对照 beautifului HTML 的 gap-*/px-*/size-*）；空数据/边界必须有守卫
 - **registry 双语契约**：name/description/tags/variant label 为 `{zh,en}` 结构，Console 编辑、展示站/CLI/MCP 读取；validateRegistry 校验双语非空 + platform 必须存在于 platforms.json（validatePlatforms 校验平台表本身）
+- **Variant group 二维切换**：`Variant` 可选 `group?: {zh,en}`——同组变体在展示站切换器中分段显示（如样式 A/B 各含多个状态）；console 变体编辑有分组输入（双空自动剥离不落盘）；无 group 的变体保持单段形态
+- **平台（端）维度**：entry.platform 引用 platforms.json 的 key；展示站侧栏 platform-switch 全局切换（localStorage 'yz-platform'，默认第一个有组件的端，空端显示「该端暂无组件」）；Console 端管理页可增删改排序（使用中禁删）；CLI/MCP 支持 platform 筛选与 platforms 清单（listPlatforms）
 - **七包依赖方向**：yzen-ui（组件）→ shared（契约）→ registry-core（感知层）→ cli/mcp-server（消费）；console/showcase 消费 shared + yzen-ui。registry-core/shared 内部相对导入必须带 `.ts` 扩展（Node type stripping 要求，tsconfig 已开 allowImportingTsExtensions）
 - **Console 鉴权**：API 除 /api/login 外全部要求 Bearer token（内存 Set，dev 重启失效）；密码 `YZ_CONSOLE_PASSWORD`（默认 123456 启动有警告）
 
@@ -79,6 +82,10 @@ node packages/mcp-server/bin/yz-mcp.mjs   # MCP stdio server（Claude Desktop/Cu
 - **Node 26 实验性 localStorage 会遮蔽 happy-dom 实现**：需要 test-setup.ts 内存垫片（console/showcase 已有）
 - `tsconfig.build.json` exclude `__tests__` 与 `demo.vue`（demo 的 `v-bind` 会触发必需 prop 类型错误，属预期）
 - **CLI/MCP 依赖 Node ≥22.18**（原生 TS type stripping 直跑 src 源码，无构建产物）
+- **console 编辑页保存用「提交副本」而非修改 draft**：双空字段（如 variant.group）在提交副本上剥离，直接 delete draft 字段会导致校验失败重渲染时模板 v-model 崩溃（ComponentEdit.save 有回归测试）
+- **happy-dom 的 MutationObserver 回调不自动调度**：需要 `window.happyDOM.waitUntilComplete()` 冲刷（theme.spec 的 settle 有实现示例）；模板 ref 必须暴露同名变量否则绑定失效
+- **console i18n 固定中文**：locale 硬编码 'zh'（不再读 localStorage `yz-locale`——曾与 showcase 共用该 key 导致偏好串扰）；无语言切换 UI，setLocale 仅保留给测试
+- **收录向导只接受 Vue SFC**：粘贴 React/JSX 源码时 `isReactJsxSource()` 特征检测会给出友好引导提示（「检测到 React JSX 代码：收录向导仅支持 Vue 单文件组件」）而非原始解析报错；仍需先移植为 Vue；SFC 支持 `<script setup lang="ts">` 与纯 JS（Sucrase 剥离类型，interface/enum/泛型均支持）
 - 本地 git 仓库 remote 为 GitHub（origin → https://github.com/727566105/Yangeon-UI.git，IPv6 可通）；开发直接在 main 分支
 
 ## 文档

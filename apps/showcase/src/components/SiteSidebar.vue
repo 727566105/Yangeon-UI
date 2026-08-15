@@ -367,7 +367,32 @@ function onNavClick(event: MouseEvent, key: string) {
   transition: background-color 150ms var(--yz-ease-out-strong), color 150ms var(--yz-ease-out-strong);
 }
 .sidebar__link:hover { background: var(--yz-hover); color: var(--yz-ink); }
-.sidebar__link--active { background: var(--yz-hover); color: var(--yz-ink); }
+/* 激活项：白底浮起 + 字重 + 内部左缘渐变指示条（对齐 console 导航激活风格，对比更明显） */
+.sidebar__link--active {
+  background: var(--yz-surface);
+  color: var(--yz-ink);
+  font-weight: 500;
+  box-shadow: 0 0 0 1px var(--yz-line-strong), 0 1px 2px #1018280d;
+}
+.sidebar__link--active:hover {
+  background: var(--yz-surface); /* hover 特异性更高会覆盖 active 背景，显式保持浮起 */
+}
+/* 指示条内嵌于激活项左缘（不外伸，避免「被切一刀」的割裂感），渐变淡出如能量条 */
+.sidebar__link--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 15px;
+  border-radius: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--yz-accent),
+    color-mix(in srgb, var(--yz-accent) 25%, transparent)
+  );
+}
 .sidebar__num {
   font-family: var(--yz-font-mono);
   font-size: 11px;

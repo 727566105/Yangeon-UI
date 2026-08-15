@@ -9,6 +9,7 @@ export const ICON_PATHS = {
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   'chevron-down': '<path d="M6 9l6 6 6-6"/>',
   'chevron-right': '<path d="M9 6l6 6-6 6"/>',
+  code: '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
   'arrow-right': '<path d="M4 12h16M14 6l6 6-6 6"/>',
   loading: '<path d="M21 12a9 9 0 1 1-6.2-8.56"/>',
   send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>',

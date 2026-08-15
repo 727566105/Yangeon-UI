@@ -135,7 +135,16 @@ export function createRegistryApi(root: string = REPO_ROOT): RegistryApi {
     const dir = join(COMPONENTS_DIR, key)
     if (existsSync(dir)) return { ok: false, error: `组件目录已存在: components/${key}` }
     if (!componentSource.includes('<template')) {
-      return { ok: false, error: '组件源码必须包含 <template>' }
+      // React JSX 误贴时给引导提示，而不是笼统的「必须包含 <template>」
+      const react = /(?:from\s*['"]react['"])|(?:import\s+React\b)|(?:React\.FC\b)/.test(
+        componentSource,
+      )
+      return {
+        ok: false,
+        error: react
+          ? '检测到 React JSX 代码：收录仅支持 Vue 单文件组件（含 <template>）。请使用 Vue 语法，或交给 ZCode 移植后再收录。'
+          : '组件源码必须包含 <template>',
+      }
     }
     const name = keyToComponentName(key)
     const idxTs = `export { default as Yz${name} } from './${name}.vue'\n`

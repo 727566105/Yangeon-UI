@@ -28,7 +28,7 @@ function createDraft(key: string): RegistryEntry {
     order: 0, // 保存时按 max+1 分配
     visible: true,
     source: `components/${key}`,
-    variants: [{ id: 'default', label: { zh: '默认', en: 'Default' }, props: {} }],
+    variants: [{ id: 'default', label: { zh: '默认', en: 'Default' }, group: { zh: '', en: '' }, props: {} }],
   }
 }
 
@@ -37,9 +37,17 @@ function createDraft(key: string): RegistryEntry {
 // registry 是纯 JSON 数据，用 JSON 深拷贝最稳。
 const draft = ref<RegistryEntry>(
   props.entry
-    ? (JSON.parse(JSON.stringify(props.entry)) as RegistryEntry)
+    ? normalizeVariants(JSON.parse(JSON.stringify(props.entry)) as RegistryEntry)
     : createDraft(props.entryKey ?? ''),
 )
+
+// 变体规范化：group 为可选字段，旧数据缺失时补空对象（模板 v-model 需要可写路径）
+function normalizeVariants(entry: RegistryEntry): RegistryEntry {
+  for (const v of entry.variants) {
+    if (!v.group) v.group = { zh: '', en: '' }
+  }
+  return entry
+}
 
 const activeVariant = ref(0)
 const saving = ref(false)
@@ -67,6 +75,7 @@ function addVariant() {
   draft.value.variants.push({
     id: `variant-${base + 1}`,
     label: { zh: '', en: '' },
+    group: { zh: '', en: '' },
     props: {},
   })
 }
@@ -112,7 +121,16 @@ function applyPropsJson(i: number) {
 // 本地校验 + 保存
 async function save() {
   errors.value = []
-  const result = validateRegistry([draft.value], [draft.value.key])
+  // 提交副本：双空 group 视为未设置并剥离（不修改 draft，避免模板 v-model 路径失效）
+  const submit: RegistryEntry = {
+    ...draft.value,
+    variants: draft.value.variants.map((v) =>
+      v.group?.zh?.trim() || v.group?.en?.trim()
+        ? v
+        : { id: v.id, label: v.label, props: v.props },
+    ),
+  }
+  const result = validateRegistry([submit], [submit.key])
   if (!result.ok) {
     errors.value = result.errors
     return
@@ -121,13 +139,13 @@ async function save() {
   try {
     // 服务端会再次校验（含组件存在性与分类存在性），本地只校验单条
     const all = await fetchRegistry()
-    const idx = all.findIndex((e) => e.key === draft.value.key)
+    const idx = all.findIndex((e) => e.key === submit.key)
     if (idx >= 0) {
-      all[idx] = draft.value
+      all[idx] = submit
     } else {
       // 新建条目：分配 order（max + 1），避免与现有组件冲突
-      draft.value.order = Math.max(0, ...all.map((e) => e.order)) + 1
-      all.push(draft.value)
+      submit.order = Math.max(0, ...all.map((e) => e.order)) + 1
+      all.push(submit)
     }
     const res = await saveRegistry(all)
     if (res.ok) {
@@ -254,6 +272,14 @@ async function save() {
               <label class="edit__field">
                 <span class="edit__label">{{ t('edit.variantLabel') }} · {{ t('common.en') }}</span>
                 <input v-model="v.label.en" class="edit__input" type="text" />
+              </label>
+              <label class="edit__field">
+                <span class="edit__label">{{ t('edit.variantGroup') }} · {{ t('common.zh') }}</span>
+                <input v-model="v.group.zh" class="edit__input" type="text" :placeholder="t('edit.variantGroupHint')" />
+              </label>
+              <label class="edit__field">
+                <span class="edit__label">{{ t('edit.variantGroup') }} · {{ t('common.en') }}</span>
+                <input v-model="v.group.en" class="edit__input" type="text" :placeholder="t('edit.variantGroupHint')" />
               </label>
             </div>
             <div class="edit__field">

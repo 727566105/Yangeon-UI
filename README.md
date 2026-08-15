@@ -7,7 +7,7 @@
 ## 产品形态：一库双端
 
 ```
-组件库 yzen-ui —— 手工精心制作的 AI 科技风 Vue 组件（核心资产，26 个组件）
+组件库 yzen-ui —— 手工精心制作的 AI 科技风 Vue 组件（核心资产，28 个组件）
         │
         ├── Showcase 展示站 —— 长滚动锚点布局 / 实时交互预览 / 变体切换 / 复制代码 / 中英文切换
         │
@@ -29,7 +29,7 @@ Vue 3 · TypeScript · Vite · SCSS + CSS Variables · pnpm monorepo
 
 ## 当前状态
 
-✅ **V1.1 完成** — 组件库 26 个组件（6 基础 + 20 AI）、Showcase 全功能（beautifului 复刻 + 中英文切换）、Console 管理端（组件列表/元信息/变体编辑/实时预览/沙箱收录）。
+✅ **V1.1 完成** — 组件库 28 个组件（8 基础 + 20 AI）、Showcase 全功能（beautifului 复刻 + 中英文切换）、Console 管理端（组件列表/元信息/变体编辑/实时预览/沙箱收录）。
 
 ## 快速启动
 

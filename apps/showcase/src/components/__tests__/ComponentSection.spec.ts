@@ -184,3 +184,41 @@ describe('ComponentSection view code', () => {
     expect(wrapper.find('.code-viewer__panel').exists()).toBe(false)
   })
 })
+
+// 多样式（多段）组件：样式 tab 栏渲染在 surface 卡片外（上方），先选样式再选状态
+describe('ComponentSection variant tabs', () => {
+  it('renders style tabs above the surface and switches the active segment', async () => {
+    const entry = registryEntries.find((e) => e.key === 'breadcrumb')!
+    const wrapper = mount(ComponentSection, {
+      props: { entry, component: componentMap[entry.key], index: entry.order },
+      global: { stubs: { teleport: true } },
+    })
+    await settle()
+    // tab 栏存在且标题为两个样式
+    const tabs = wrapper.findAll('.variant-tabs__tab')
+    expect(tabs.map((t) => t.text())).toEqual(['样式 A', '样式 B'])
+    // 默认激活段 = 样式 A：切换器只显示 A 的 3 个状态按钮
+    const items = wrapper.findAll('.variant-switcher__item')
+    expect(items.map((b) => b.text())).toEqual(['纯文本', '链接跳转', '折叠'])
+    // 组标题已上移到 tab 栏，卡片内不再渲染
+    expect(wrapper.find('.variant-switcher__group').exists()).toBe(false)
+    // 点击「样式 B」tab → 按钮组切为 B（激活项归属 B 段第一个）
+    await tabs[1].trigger('click')
+    await settle()
+    expect(wrapper.findAll('.variant-switcher__item').map((b) => b.text())).toEqual(['纯文本', '链接跳转', '折叠'])
+    expect(wrapper.find('.variant-switcher__item--active').text()).toBe('纯文本')
+    // tab 激活态跟随
+    expect(wrapper.findAll('.variant-tabs__tab')[1].classes()).toContain('variant-tabs__tab--active')
+  })
+
+  it('keeps the switcher flat (no tabs) for single-segment components', async () => {
+    const entry = registryEntries.find((e) => e.key === 'button')!
+    const wrapper = mount(ComponentSection, {
+      props: { entry, component: componentMap[entry.key], index: entry.order },
+      global: { stubs: { teleport: true } },
+    })
+    await settle()
+    expect(wrapper.find('.component-section__tabs').exists()).toBe(false)
+    expect(wrapper.findAll('.variant-switcher__item').length).toBeGreaterThan(1)
+  })
+})

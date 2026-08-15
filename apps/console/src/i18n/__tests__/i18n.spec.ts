@@ -14,6 +14,13 @@ describe('console i18n', () => {
     expect(t('app.title')).toBe('Yzen Console · 组件管理')
   })
 
+  it('stays zh even when a stale en preference exists in localStorage', () => {
+    // 管理端固定中文：残留的 yz-locale 偏好不应影响（已移除该存储键的读取）
+    window.localStorage.setItem('yz-locale', 'en')
+    expect(locale.value).toBe('zh')
+    expect(t('nav.dev')).toBe('开发接入')
+  })
+
   it('switches language reactively', () => {
     const { t: tt } = useI18n()
     setLocale('en')

@@ -18,7 +18,19 @@ const emit = defineEmits<{
 const { t, localized } = useI18n()
 
 const search = ref('')
+// 分类 tab 默认直接选中第一个分类（无「全部分类」入口）。
+// categories 由父级异步加载：挂载时可能为空（兜底 'all' 不筛选），
+// 加载完成后自动选中第一个分类
 const category = ref('all')
+watch(
+  () => props.categories,
+  (cats) => {
+    if (category.value === 'all' && cats.length) {
+      category.value = cats[0].key
+    }
+  },
+  { immediate: true },
+)
 const platform = ref('all')
 
 // 排序草稿：数组顺序即展示顺序（保存时 order = index + 1，与分类管理同款）
@@ -35,16 +47,11 @@ const saving = ref(false)
 const savedOk = ref(false)
 const saveError = ref('')
 
-async function move(key: string, dir: -1 | 1) {
+/** 应用新顺序（按钮/拖拽共用）：乐观更新 orderedKeys + 全量保存 + 失败回滚 */
+async function applyOrder(next: string[]) {
   if (saving.value) return
-  const i = orderedKeys.value.indexOf(key)
-  // 父级刷新 entries 后 watch 尚未同步草稿的窗口内 indexOf 可能为 -1，直接忽略
-  if (i < 0) return
-  const j = i + dir
-  if (j < 0 || j >= orderedKeys.value.length) return
   const prev = [...orderedKeys.value]
-  // 乐观更新：先交换，保存失败再回滚
-  ;[orderedKeys.value[i], orderedKeys.value[j]] = [orderedKeys.value[j], orderedKeys.value[i]]
+  orderedKeys.value = next
   saving.value = true
   saveError.value = ''
   try {
@@ -61,6 +68,58 @@ async function move(key: string, dir: -1 | 1) {
   } finally {
     saving.value = false
   }
+}
+
+async function move(key: string, dir: -1 | 1) {
+  if (saving.value) return
+  const i = orderedKeys.value.indexOf(key)
+  // 父级刷新 entries 后 watch 尚未同步草稿的窗口内 indexOf 可能为 -1，直接忽略
+  if (i < 0) return
+  const j = i + dir
+  if (j < 0 || j >= orderedKeys.value.length) return
+  const next = [...orderedKeys.value]
+  ;[next[i], next[j]] = [next[j], next[i]]
+  await applyOrder(next)
+}
+
+// ---------- 拖拽排序（HTML5 DnD，与 ↑/↓ 并存） ----------
+const dragKey = ref<string | null>(null)
+const dropKey = ref<string | null>(null)
+
+function onDragStart(e: DragEvent, key: string) {
+  dragKey.value = key
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', key)
+  }
+}
+
+function onDragOver(e: DragEvent, key: string) {
+  e.preventDefault() // 允许 drop
+  if (key !== dragKey.value) dropKey.value = key
+}
+
+function onDrop(e: DragEvent, key: string) {
+  e.preventDefault()
+  const from = dragKey.value ?? e.dataTransfer?.getData('text/plain')
+  const to = key
+  dragKey.value = null
+  dropKey.value = null
+  if (!from || from === to) return
+  const fromIdx = orderedKeys.value.indexOf(from)
+  const toIdx = orderedKeys.value.indexOf(to)
+  if (fromIdx < 0 || toIdx < 0) return
+  // from 原本在 to 之前：drop 到 to = 放到 to 前面 = 原位，跳过保存
+  if (fromIdx < toIdx) return
+  // 重排：移除拖拽项，插入到目标行原位置（在其前）
+  const next = orderedKeys.value.filter((k) => k !== from)
+  next.splice(toIdx, 0, from)
+  void applyOrder(next)
+}
+
+function onDragEnd() {
+  dragKey.value = null
+  dropKey.value = null
 }
 
 const filtered = computed(() => {
@@ -102,10 +161,17 @@ const platformLabel = (key: string) => {
         type="search"
         :placeholder="t('list.search')"
       />
-      <select v-model="category" class="list__select" :aria-label="t('list.categoryAll')">
-        <option value="all">{{ t('list.categoryAll') }}</option>
-        <option v-for="c in categories" :key="c.key" :value="c.key">{{ localized(c.label) }}</option>
-      </select>
+      <!-- 分类筛选：胶囊 tab 组（默认选中第一个分类，无「全部分类」入口） -->
+      <div class="list__tabs" role="tablist" :aria-label="t('list.categoryAll')">
+        <button
+          v-for="c in categories"
+          :key="c.key"
+          type="button"
+          class="list__tab"
+          :class="{ 'list__tab--active': category === c.key }"
+          @click="category = c.key"
+        >{{ localized(c.label) }}</button>
+      </div>
       <select v-model="platform" class="list__select" :aria-label="t('list.platformAll')">
         <option value="all">{{ t('list.platformAll') }}</option>
         <option v-for="p in platforms" :key="p.key" :value="p.key">{{ localized(p.label) }}</option>
@@ -135,7 +201,20 @@ const platformLabel = (key: string) => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(e, i) in filtered" :key="e.key" class="list__row">
+          <tr
+            v-for="(e, i) in filtered"
+            :key="e.key"
+            class="list__row"
+            :class="{
+              'list__row--dragging': dragKey === e.key,
+              'list__row--drop-target': dropKey === e.key,
+            }"
+            draggable="true"
+            @dragstart="onDragStart($event, e.key)"
+            @dragover="onDragOver($event, e.key)"
+            @drop="onDrop($event, e.key)"
+            @dragend="onDragEnd"
+          >
             <td class="list__td list__td--num">{{ String(i + 1).padStart(2, '0') }}</td>
             <td class="list__td list__td--name">
               <code class="list__key">{{ e.key }}</code>
@@ -192,6 +271,7 @@ const platformLabel = (key: string) => {
 .list__toolbar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -213,13 +293,56 @@ const platformLabel = (key: string) => {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--yz-accent) 20%, transparent);
 }
 .list__select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   height: 34px;
-  padding: 0 10px;
+  /* 自定义箭头替代浏览器原生箭头（原生会占右侧约 20px+，文字左右间距不对称） */
+  padding: 0 26px 0 10px;
   border: 1px solid var(--yz-line-strong);
   border-radius: var(--yz-radius-control);
   background: var(--yz-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A9DA3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
   color: var(--yz-ink);
   font-size: 13px;
+}
+/* 分类筛选 tab 组：胶囊风格（对齐 VariantTabs），激活项白底浮起。
+   order + flex-basis 100% 独占 toolbar 第二行（第一行：搜索 + 端筛选 + 收录按钮）；
+   用 order 而非调整 DOM 顺序，保持无障碍阅读顺序不变 */
+.list__tabs {
+  display: inline-flex;
+  align-items: center;
+  order: 1;
+  flex-basis: 100%;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 99px;
+  background: var(--yz-field);
+  box-shadow: 0 0 0 1px var(--yz-line);
+}
+.list__tab {
+  flex: 1; /* 按钮均分整行宽度，与组件列表等宽 */
+  border: none;
+  background: transparent;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--yz-ink-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 150ms var(--yz-ease-out-strong), color 150ms var(--yz-ease-out-strong), box-shadow 150ms var(--yz-ease-out-strong);
+}
+.list__tab:hover {
+  color: var(--yz-ink);
+}
+.list__tab--active {
+  background: var(--yz-surface);
+  color: var(--yz-ink);
+  box-shadow: 0 0 0 1px var(--yz-line-strong), 0 1px 2px #1018280d;
 }
 .list__add {
   height: 34px;
@@ -248,7 +371,7 @@ const platformLabel = (key: string) => {
 .list__th {
   padding: 10px 14px;
   text-align: left;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--yz-ink-3);
   border-bottom: 1px solid var(--yz-line);
@@ -265,6 +388,14 @@ const platformLabel = (key: string) => {
 }
 .list__row:last-child .list__td { border-bottom: none; }
 .list__row:hover { background: var(--yz-hover); }
+/* 拖拽排序：源行半透明 + 目标行高亮（cursor grab 提示可拖拽） */
+.list__row { cursor: grab; }
+.list__row:active { cursor: grabbing; }
+.list__row--dragging { opacity: 0.4; }
+.list__row--drop-target .list__td {
+  background: color-mix(in srgb, var(--yz-accent) 10%, transparent);
+  box-shadow: inset 0 2px 0 0 var(--yz-accent);
+}
 .list__td--num {
   font-family: var(--yz-font-mono);
   font-size: 11.5px;

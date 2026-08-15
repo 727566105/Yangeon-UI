@@ -5,14 +5,15 @@ import ComponentEdit from './views/ComponentEdit.vue'
 import ImportWizard from './views/ImportWizard.vue'
 import Categories from './views/Categories.vue'
 import Platforms from './views/Platforms.vue'
+import DevGuide from './views/DevGuide.vue'
 import Login from './views/Login.vue'
 import { fetchRegistry, fetchCategories, fetchPlatforms, getToken, setToken, logout, AuthError } from './api'
 import { useI18n } from './i18n'
 import type { Platform, RegistryCategory, RegistryEntry } from '@yzen-ui/shared'
 
-const { t, locale, setLocale } = useI18n()
+const { t } = useI18n()
 
-type View = 'list' | 'edit' | 'import' | 'categories' | 'platforms'
+type View = 'list' | 'edit' | 'import' | 'categories' | 'platforms' | 'dev'
 const view = ref<View>('list')
 const editingKey = ref<string | null>(null)
 const entries = ref<RegistryEntry[]>([])
@@ -42,9 +43,10 @@ onMounted(() => {
   if (authenticated.value) load()
 })
 
-// 视图切换时刷新数据（分类/端/组件可能在别的视图被修改；categories/platforms 供下拉数据驱动）
+// 视图切换时刷新数据（分类/端/组件可能在别的视图被修改；categories/platforms 供下拉数据驱动）。
+// dev 是静态说明页，不依赖数据，跳过刷新
 watch(view, (v) => {
-  if (v !== 'categories' && v !== 'platforms' && authenticated.value) load()
+  if (v !== 'categories' && v !== 'platforms' && v !== 'dev' && authenticated.value) load()
 })
 
 function onLoggedIn() {
@@ -52,10 +54,21 @@ function onLoggedIn() {
   load()
 }
 
+// 退出确认弹窗：点「退出登录」先弹确认，确认后才真正登出
+const showLogoutConfirm = ref(false)
+
 async function onLogout() {
   await logout()
   authenticated.value = false
   view.value = 'list'
+}
+
+function requestLogout() {
+  showLogoutConfirm.value = true
+}
+
+function cancelLogout() {
+  showLogoutConfirm.value = false
 }
 
 function openEdit(key: string) {
@@ -75,6 +88,10 @@ function goCategories() {
 function goPlatforms() {
   view.value = 'platforms'
   load()
+}
+
+function goDev() {
+  view.value = 'dev'
 }
 
 // 主题切换（与 showcase 同款：data-theme + yz-theme 持久化）
@@ -117,25 +134,11 @@ function setTheme(dark: boolean) {
         <button
           type="button"
           class="console__nav-item"
-          :class="{ 'console__nav-item--active': view === 'import' }"
-          @click="goImport"
-        >{{ t('nav.import') }}</button>
+          :class="{ 'console__nav-item--active': view === 'dev' }"
+          @click="goDev"
+        >{{ t('nav.dev') }}</button>
       </nav>
       <div class="console__controls">
-        <div class="lang-switch" role="group" :aria-label="t('lang.aria')">
-          <button
-            type="button"
-            class="lang-switch__item"
-            :class="{ 'lang-switch__item--active': locale === 'zh' }"
-            @click="setLocale('zh')"
-          >中</button>
-          <button
-            type="button"
-            class="lang-switch__item"
-            :class="{ 'lang-switch__item--active': locale === 'en' }"
-            @click="setLocale('en')"
-          >EN</button>
-        </div>
         <div class="theme-switch" role="group" :aria-label="t('theme.aria')">
           <button
             type="button"
@@ -161,7 +164,7 @@ function setTheme(dark: boolean) {
             </svg>
           </button>
         </div>
-        <button type="button" class="console__logout" @click="onLogout">{{ t('nav.logout') }}</button>
+        <button type="button" class="console__logout" @click="requestLogout">{{ t('nav.logout') }}</button>
       </div>
     </header>
 
@@ -190,7 +193,31 @@ function setTheme(dark: boolean) {
       <Categories v-else-if="view === 'categories'" />
       <Platforms v-else-if="view === 'platforms'" />
       <ImportWizard v-else-if="view === 'import'" @done="view = 'list'" />
+      <DevGuide v-else-if="view === 'dev'" />
     </main>
+
+    <!-- 退出确认弹窗：遮罩 + 居中卡片，Esc / 点遮罩取消 -->
+    <Teleport to="body">
+      <div
+        v-if="showLogoutConfirm"
+        class="confirm-mask"
+        @click.self="cancelLogout"
+        @keydown.esc="cancelLogout"
+      >
+        <div class="confirm-dialog" role="alertdialog" aria-modal="true" :aria-label="t('nav.logout')">
+          <p class="confirm-dialog__title">{{ t('nav.logoutConfirmTitle') }}</p>
+          <p class="confirm-dialog__msg">{{ t('nav.logoutConfirmMsg') }}</p>
+          <div class="confirm-dialog__actions">
+            <button type="button" class="confirm-dialog__btn" @click="cancelLogout">
+              {{ t('common.cancel') }}
+            </button>
+            <button type="button" class="confirm-dialog__btn confirm-dialog__btn--danger" @click="onLogout">
+              {{ t('nav.logout') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -254,42 +281,18 @@ function setTheme(dark: boolean) {
   transition: background-color 150ms var(--yz-ease-out-strong), color 150ms var(--yz-ease-out-strong);
 }
 .console__nav-item:hover { color: var(--yz-ink); }
+/* 激活项：白底浮起 + 描边阴影（对齐分类 tab / 主题切换的激活风格，对比更明显） */
 .console__nav-item--active {
-  background: var(--yz-hover);
+  background: var(--yz-surface);
   color: var(--yz-ink);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--yz-line-strong), 0 1px 2px #1018280d;
 }
 .console__controls {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-left: auto;
-}
-.lang-switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border-radius: 99px;
-  background: var(--yz-field);
-  box-shadow: 0 0 0 1px var(--yz-line);
-}
-.lang-switch__item {
-  border: none;
-  background: transparent;
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-family: var(--yz-font-mono);
-  font-size: 11.5px;
-  font-weight: 500;
-  color: var(--yz-ink-3);
-  cursor: pointer;
-  transition: background-color 150ms var(--yz-ease-out-strong), color 150ms var(--yz-ease-out-strong);
-}
-.lang-switch__item:hover { color: var(--yz-ink); }
-.lang-switch__item--active {
-  background: var(--yz-surface);
-  color: var(--yz-ink);
-  box-shadow: 0 0 0 1px var(--yz-line-strong), 0 1px 2px #1018280d;
 }
 .theme-switch {
   display: inline-flex;
@@ -335,5 +338,68 @@ function setTheme(dark: boolean) {
 }
 .console__main {
   padding: 24px 28px 64px;
+}
+
+/* 退出确认弹窗 */
+.confirm-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 24, 40, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.confirm-dialog {
+  width: min(360px, calc(100vw - 48px));
+  padding: 20px 22px;
+  border-radius: var(--yz-radius-window);
+  background: var(--yz-surface);
+  box-shadow: 0 0 0 1px var(--yz-line), 0 16px 40px rgba(16, 24, 40, 0.16);
+  text-align: left;
+}
+.confirm-dialog__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--yz-ink);
+}
+.confirm-dialog__msg {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--yz-ink-2);
+}
+.confirm-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+.confirm-dialog__btn {
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--yz-radius-control);
+  background: var(--yz-field);
+  color: var(--yz-ink);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms var(--yz-ease-out-strong);
+}
+.confirm-dialog__btn:hover { background: var(--yz-hover); }
+.confirm-dialog__btn--danger {
+  background: var(--yz-tag-red);
+  color: #fff;
+}
+.confirm-dialog__btn--danger:hover { background: color-mix(in srgb, var(--yz-tag-red) 85%, #000); }
+</style>
+
+<!-- 全局：滚动条槽位常驻，分类切换（内容高度跨阈值）时页面宽度不再跳动闪动 -->
+<style>
+html {
+  scrollbar-gutter: stable;
 }
 </style>

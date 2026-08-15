@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import App from '../App.vue'
+import { registryEntriesFor } from '../registry'
 
 // App 冒烟：端切换后内容区只渲染对应端组件（组件内部不渲染 demo，避免 glob 开销）
 vi.mock('../components/ComponentSection.vue', () => ({
@@ -20,9 +21,10 @@ describe('App', () => {
     const wrapper = mount(App)
     await flushPromises()
     const sections = wrapper.findAll('.mock-section')
+    // 默认端 = 第一个有组件的端（desktop），区块数 = 该端条目数（数据驱动，不硬编码）
+    const expected = registryEntriesFor('desktop').length
+    expect(sections.length).toBe(expected)
     expect(sections.length).toBeGreaterThan(0)
-    // 全部为 desktop 组件
-    expect(sections.length).toBeLessThanOrEqual(26)
   })
 
   it('switches the whole page to the mobile platform (empty state)', async () => {

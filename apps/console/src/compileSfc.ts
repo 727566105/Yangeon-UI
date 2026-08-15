@@ -11,11 +11,44 @@ const VUE_CDN = 'https://esm.sh/vue@3.5.41'
 // 只允许纯 Vue 组件（无外部依赖）：检测 import 非 'vue' 的语句
 const EXTERNAL_IMPORT_RE = /import\s+(?:[^'"]*\s+from\s+)?['"](?!vue['"])([^'"]+)['"]/g
 
+// React JSX 特征检测：用户误贴 React 组件代码时，parse 会报「Element is missing end tag」
+// 等误导性错误，这里识别后改为友好提示（React 不是 Vue SFC，格式错误不应由用户手工修复）
+const REACT_IMPORT_RE = /(?:from\s*['"]react['"])|(?:import\s+React\b)|(?:React\.FC\b)/
+const JSX_FEATURE_RES = [
+  /\bclassName\s*=/,
+  /\bon[A-Z]\w*\s*=\s*\{/, // onClick/onChange={…}（JSX 事件绑定）
+  /\bstyle\s*=\s*\{\{/, // style={{…}}
+  /<[A-Z][A-Za-z0-9]*(\s|\/?>)/, // 大写组件标签（<Segmented / <Tabs …）
+]
+
+/** 判定源码是否为 React JSX（import react 命中即算；否则至少命中 2 个 JSX 特征） */
+export function isReactJsxSource(source: string): boolean {
+  if (REACT_IMPORT_RE.test(source)) return true
+  let hits = 0
+  for (const re of JSX_FEATURE_RES) {
+    if (re.test(source)) hits++
+  }
+  return hits >= 2
+}
+
 export function compileSfc(source: string): { html: string } {
   const { descriptor, errors } = parse(source, { filename: 'SandboxPreview.vue' })
   if (errors.length) {
+    // React JSX 代码不是用户能修的「格式错误」，直接给引导性提示
+    if (isReactJsxSource(source)) {
+      throw new Error(
+        '检测到 React JSX 代码：收录向导仅支持 Vue 单文件组件（<template> + <script setup>）。' +
+          '请使用 Vue 模板语法，或把该 React 组件交给 ZCode 移植为 Vue 组件后再收录。',
+      )
+    }
+    // 其他解析错误带 loc（行列）时附上定位信息，帮助用户在源码中快速找到问题行
     const first = errors[0]
-    throw new Error(`SFC 解析失败: ${typeof first === 'string' ? first : first.message}`)
+    const msg = typeof first === 'string' ? first : first.message
+    const at =
+      typeof first !== 'string' && first.loc?.start
+        ? `（第 ${first.loc.start.line} 行，第 ${first.loc.start.column} 列）`
+        : ''
+    throw new Error(`SFC 解析失败: ${msg}${at}`)
   }
   if (!descriptor.script && !descriptor.scriptSetup) {
     throw new Error('组件必须包含 <script> 或 <script setup>')

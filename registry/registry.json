@@ -358,6 +358,449 @@
     "platform": "desktop"
   },
   {
+    "key": "breadcrumb",
+    "name": {
+      "zh": "Breadcrumb 面包屑",
+      "en": "Breadcrumb"
+    },
+    "description": {
+      "zh": "层级导航面包屑——链接/纯文本混合、自定义分隔符、超出折叠为省略号",
+      "en": "Hierarchical breadcrumb nav — mixed links/text, custom separator, ellipsis collapse"
+    },
+    "category": "basic",
+    "platform": "desktop",
+    "tags": [
+      {
+        "zh": "基础",
+        "en": "Basic"
+      },
+      {
+        "zh": "导航",
+        "en": "Navigation"
+      }
+    ],
+    "order": 7,
+    "visible": true,
+    "source": "components/breadcrumb",
+    "variants": [
+      {
+        "id": "a-plain",
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        },
+        "label": {
+          "zh": "纯文本",
+          "en": "Plain"
+        },
+        "props": {
+          "style": "a",
+          "items": [
+            {
+              "title": "首页",
+              "href": "#"
+            },
+            {
+              "title": "应用中心",
+              "href": "#"
+            },
+            {
+              "title": "应用列表",
+              "href": "#"
+            },
+            {
+              "title": "应用详情"
+            }
+          ]
+        }
+      },
+      {
+        "id": "a-links",
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        },
+        "label": {
+          "zh": "链接跳转",
+          "en": "Links"
+        },
+        "props": {
+          "style": "a",
+          "items": [
+            {
+              "title": "Home",
+              "href": "#"
+            },
+            {
+              "title": "Application Center",
+              "href": "#"
+            },
+            {
+              "title": "Application List",
+              "href": "#"
+            },
+            {
+              "title": "An Application"
+            }
+          ]
+        }
+      },
+      {
+        "id": "a-collapsed",
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        },
+        "label": {
+          "zh": "折叠",
+          "en": "Collapsed"
+        },
+        "props": {
+          "style": "a",
+          "separator": "›",
+          "maxCount": 3,
+          "items": [
+            {
+              "title": "首页",
+              "href": "#"
+            },
+            {
+              "title": "产品",
+              "href": "#"
+            },
+            {
+              "title": "数据中心",
+              "href": "#"
+            },
+            {
+              "title": "任务列表",
+              "href": "#"
+            },
+            {
+              "title": "任务详情"
+            }
+          ]
+        }
+      },
+      {
+        "id": "b-plain",
+        "group": {
+          "zh": "样式 B",
+          "en": "Style B"
+        },
+        "label": {
+          "zh": "纯文本",
+          "en": "Plain"
+        },
+        "props": {
+          "style": "b",
+          "items": [
+            {
+              "title": "首页",
+              "href": "#"
+            },
+            {
+              "title": "应用中心",
+              "href": "#"
+            },
+            {
+              "title": "应用列表",
+              "href": "#"
+            },
+            {
+              "title": "应用详情"
+            }
+          ]
+        }
+      },
+      {
+        "id": "b-links",
+        "group": {
+          "zh": "样式 B",
+          "en": "Style B"
+        },
+        "label": {
+          "zh": "链接跳转",
+          "en": "Links"
+        },
+        "props": {
+          "style": "b",
+          "items": [
+            {
+              "title": "Home",
+              "href": "#"
+            },
+            {
+              "title": "Application Center",
+              "href": "#"
+            },
+            {
+              "title": "Application List",
+              "href": "#"
+            },
+            {
+              "title": "An Application"
+            }
+          ]
+        }
+      },
+      {
+        "id": "b-collapsed",
+        "group": {
+          "zh": "样式 B",
+          "en": "Style B"
+        },
+        "label": {
+          "zh": "折叠",
+          "en": "Collapsed"
+        },
+        "props": {
+          "style": "b",
+          "separator": "›",
+          "maxCount": 3,
+          "items": [
+            {
+              "title": "首页",
+              "href": "#"
+            },
+            {
+              "title": "产品",
+              "href": "#"
+            },
+            {
+              "title": "数据中心",
+              "href": "#"
+            },
+            {
+              "title": "任务列表",
+              "href": "#"
+            },
+            {
+              "title": "任务详情"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "key": "tabs",
+    "name": {
+      "zh": "Tabs 标签页",
+      "en": "Tabs"
+    },
+    "description": {
+      "zh": "内容切换标签页——指示器对齐（居中/左/右）与缩短可调，AI 科技风渐变指示条",
+      "en": "Content-switching tabs — adjustable indicator alignment (center/start/end) and shrink with a gradient indicator bar"
+    },
+    "category": "basic",
+    "platform": "desktop",
+    "tags": [
+      {
+        "zh": "基础",
+        "en": "Basic"
+      },
+      {
+        "zh": "切换",
+        "en": "Switch"
+      }
+    ],
+    "order": 8,
+    "visible": true,
+    "source": "components/tabs",
+    "variants": [
+      {
+        "id": "center",
+        "label": {
+          "zh": "居中",
+          "en": "Center"
+        },
+        "props": {
+          "align": "center",
+          "items": [
+            {
+              "key": "1",
+              "label": "Tab 1",
+              "content": "Content of Tab Pane 1"
+            },
+            {
+              "key": "2",
+              "label": "Tab 2",
+              "content": "Content of Tab Pane 2"
+            },
+            {
+              "key": "3",
+              "label": "Tab 3",
+              "content": "Content of Tab Pane 3"
+            }
+          ]
+        },
+        "group": {
+          "zh": "基本",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "start",
+        "label": {
+          "zh": "左对齐",
+          "en": "Start"
+        },
+        "props": {
+          "align": "start",
+          "indicatorShrink": 20,
+          "items": [
+            {
+              "key": "1",
+              "label": "Tab 1",
+              "content": "Content of Tab Pane 1"
+            },
+            {
+              "key": "2",
+              "label": "Tab 2",
+              "content": "Content of Tab Pane 2"
+            },
+            {
+              "key": "3",
+              "label": "Tab 3",
+              "content": "Content of Tab Pane 3"
+            }
+          ]
+        },
+        "group": {
+          "zh": "基本",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "end",
+        "label": {
+          "zh": "右对齐",
+          "en": "End"
+        },
+        "props": {
+          "align": "end",
+          "indicatorShrink": 20,
+          "items": [
+            {
+              "key": "1",
+              "label": "Tab 1",
+              "content": "Content of Tab Pane 1"
+            },
+            {
+              "key": "2",
+              "label": "Tab 2",
+              "content": "Content of Tab Pane 2"
+            },
+            {
+              "key": "3",
+              "label": "Tab 3",
+              "content": "Content of Tab Pane 3"
+            }
+          ]
+        },
+        "group": {
+          "zh": "基本",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "b-card",
+        "group": {
+          "zh": "样式 B",
+          "en": "Style B"
+        },
+        "label": {
+          "zh": "卡片式",
+          "en": "Card"
+        },
+        "props": {
+          "type": "card",
+          "items": [
+            {
+              "key": "1",
+              "label": "Tab 1",
+              "content": "Content of tab 1"
+            },
+            {
+              "key": "2",
+              "label": "Tab 2",
+              "content": "Content of tab 2"
+            },
+            {
+              "key": "3",
+              "label": "Tab 3",
+              "content": "Content of tab 3"
+            }
+          ]
+        }
+      },
+      {
+        "id": "b-card-large",
+        "group": {
+          "zh": "样式 B",
+          "en": "Style B"
+        },
+        "label": {
+          "zh": "大尺寸卡片",
+          "en": "Large card"
+        },
+        "props": {
+          "type": "card",
+          "size": "large",
+          "items": [
+            {
+              "key": "1",
+              "label": "Tab 1",
+              "content": "Content of tab 1"
+            },
+            {
+              "key": "2",
+              "label": "Tab 2",
+              "content": "Content of tab 2"
+            },
+            {
+              "key": "3",
+              "label": "Tab 3",
+              "content": "Content of tab 3"
+            }
+          ]
+        }
+      },
+      {
+        "id": "b-editable",
+        "group": {
+          "zh": "样式 B",
+          "en": "Style B"
+        },
+        "label": {
+          "zh": "可编辑",
+          "en": "Editable"
+        },
+        "props": {
+          "type": "editable-card",
+          "items": [
+            {
+              "key": "1",
+              "label": "Tab 1",
+              "content": "Content of editable tab 1"
+            },
+            {
+              "key": "2",
+              "label": "Tab 2",
+              "content": "Content of editable tab 2"
+            },
+            {
+              "key": "3",
+              "label": "Tab 3",
+              "content": "Content of editable tab 3"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
     "key": "ai-loading",
     "name": {
       "zh": "AI Loading 智能加载",
@@ -378,7 +821,7 @@
         "en": "Loading"
       }
     ],
-    "order": 7,
+    "order": 9,
     "visible": true,
     "source": "components/ai-loading",
     "variants": [
@@ -436,7 +879,7 @@
         "en": "Code"
       }
     ],
-    "order": 8,
+    "order": 10,
     "visible": true,
     "source": "components/code-block",
     "variants": [
@@ -494,7 +937,7 @@
         "en": "Reasoning"
       }
     ],
-    "order": 9,
+    "order": 11,
     "visible": true,
     "source": "components/thinking",
     "variants": [
@@ -542,7 +985,7 @@
         "en": "Tools"
       }
     ],
-    "order": 10,
+    "order": 12,
     "visible": true,
     "source": "components/tool-chips",
     "variants": [
@@ -588,7 +1031,7 @@
         "en": "Input"
       }
     ],
-    "order": 11,
+    "order": 13,
     "visible": true,
     "source": "components/prompt-bar",
     "variants": [
@@ -645,7 +1088,7 @@
         "en": "Streaming"
       }
     ],
-    "order": 12,
+    "order": 14,
     "visible": true,
     "source": "components/streaming-text",
     "variants": [
@@ -702,7 +1145,7 @@
         "en": "Chat"
       }
     ],
-    "order": 13,
+    "order": 15,
     "visible": true,
     "source": "components/chat-composer",
     "variants": [
@@ -758,7 +1201,7 @@
         "en": "Approval"
       }
     ],
-    "order": 14,
+    "order": 16,
     "visible": true,
     "source": "components/approval-card",
     "variants": [
@@ -807,7 +1250,7 @@
         "en": "Tasks"
       }
     ],
-    "order": 15,
+    "order": 17,
     "visible": true,
     "source": "components/task-rows",
     "variants": [
@@ -855,7 +1298,7 @@
         "en": "Search"
       }
     ],
-    "order": 16,
+    "order": 18,
     "visible": true,
     "source": "components/search",
     "variants": [
@@ -903,7 +1346,7 @@
         "en": "Context"
       }
     ],
-    "order": 17,
+    "order": 19,
     "visible": true,
     "source": "components/context-cards",
     "variants": [
@@ -991,7 +1434,7 @@
         "en": "Suggestions"
       }
     ],
-    "order": 18,
+    "order": 20,
     "visible": true,
     "source": "components/recommendation-card",
     "variants": [
@@ -1048,7 +1491,7 @@
         "en": "Insights"
       }
     ],
-    "order": 19,
+    "order": 21,
     "visible": true,
     "source": "components/insight-cards",
     "variants": [
@@ -1315,7 +1758,7 @@
         "en": "Table"
       }
     ],
-    "order": 20,
+    "order": 22,
     "visible": true,
     "source": "components/diff-table",
     "variants": [
@@ -1372,7 +1815,7 @@
         "en": "Table"
       }
     ],
-    "order": 21,
+    "order": 23,
     "visible": true,
     "source": "components/filter-table",
     "variants": [
@@ -1428,7 +1871,7 @@
         "en": "Navigation"
       }
     ],
-    "order": 22,
+    "order": 24,
     "visible": true,
     "source": "components/sidebar-nav",
     "variants": [
@@ -1484,7 +1927,7 @@
         "en": "Data"
       }
     ],
-    "order": 23,
+    "order": 25,
     "visible": true,
     "source": "components/records-table",
     "variants": [
@@ -1530,7 +1973,7 @@
         "en": "Config"
       }
     ],
-    "order": 24,
+    "order": 26,
     "visible": true,
     "source": "components/fine-tune-card",
     "variants": [
@@ -1576,7 +2019,7 @@
         "en": "Editing"
       }
     ],
-    "order": 25,
+    "order": 27,
     "visible": true,
     "source": "components/selection-actions",
     "variants": [
@@ -1643,7 +2086,7 @@
         "en": "Thinking"
       }
     ],
-    "order": 26,
+    "order": 28,
     "visible": true,
     "source": "components/thinking-orbs",
     "variants": [
@@ -1739,5 +2182,311 @@
       }
     ],
     "platform": "desktop"
+  },
+  {
+    "key": "border-beam",
+    "name": {
+      "zh": "Border Beam 边框光束",
+      "en": "Border Beam"
+    },
+    "description": {
+      "zh": "渐变光束沿容器边缘流动的装饰容器——六组预设配色，速度与粗细可调",
+      "en": "A decorative container with a gradient beam flowing along its edge — six preset palettes, adjustable speed and width"
+    },
+    "category": "ai",
+    "platform": "desktop",
+    "tags": [
+      {
+        "zh": "装饰",
+        "en": "Decor"
+      },
+      {
+        "zh": "容器",
+        "en": "Container"
+      }
+    ],
+    "order": 29,
+    "visible": true,
+    "source": "components/border-beam",
+    "variants": [
+      {
+        "id": "ocean",
+        "label": {
+          "zh": "Ocean",
+          "en": "Ocean"
+        },
+        "props": {
+          "name": "Ocean",
+          "usage": "Dashboard",
+          "description": "A calm blue-green accent that works well for data views and cloud tooling.",
+          "color": [
+            {
+              "color": "#1677ff",
+              "percent": 0
+            },
+            {
+              "color": "#36cfc9",
+              "percent": 52
+            },
+            {
+              "color": "#95de64",
+              "percent": 100
+            }
+          ]
+        },
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "sunset",
+        "label": {
+          "zh": "Sunset",
+          "en": "Sunset"
+        },
+        "props": {
+          "name": "Sunset",
+          "usage": "Upgrade",
+          "description": "A warm highlight for upgrade prompts, featured cards, and marketing blocks.",
+          "color": [
+            {
+              "color": "#ff7a45",
+              "percent": 0
+            },
+            {
+              "color": "#ff4d4f",
+              "percent": 49
+            },
+            {
+              "color": "#ff85c0",
+              "percent": 100
+            }
+          ]
+        },
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "aurora",
+        "label": {
+          "zh": "Aurora",
+          "en": "Aurora"
+        },
+        "props": {
+          "name": "Aurora",
+          "usage": "AI",
+          "description": "A vivid cool-toned beam suited for AI assistants, copilots, and automation panels.",
+          "color": [
+            {
+              "color": "#7c3aed",
+              "percent": 0
+            },
+            {
+              "color": "#06b6d4",
+              "percent": 57
+            },
+            {
+              "color": "#67e8f9",
+              "percent": 100
+            }
+          ]
+        },
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "forest",
+        "label": {
+          "zh": "Forest",
+          "en": "Forest"
+        },
+        "props": {
+          "name": "Forest",
+          "usage": "Recommendation",
+          "description": "A bright natural palette that feels good on recommendation and growth-oriented cards.",
+          "color": [
+            {
+              "color": "#22c55e",
+              "percent": 0
+            },
+            {
+              "color": "#a3e635",
+              "percent": 54
+            },
+            {
+              "color": "#facc15",
+              "percent": 100
+            }
+          ]
+        },
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "ember",
+        "label": {
+          "zh": "Ember",
+          "en": "Ember"
+        },
+        "props": {
+          "name": "Ember",
+          "usage": "Alert",
+          "description": "A high-energy warm gradient for important alerts, launch cards, and hot paths.",
+          "color": [
+            {
+              "color": "#fa541c",
+              "percent": 0
+            },
+            {
+              "color": "#ff7875",
+              "percent": 46
+            },
+            {
+              "color": "#ffd666",
+              "percent": 100
+            }
+          ]
+        },
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "nebula",
+        "label": {
+          "zh": "Nebula",
+          "en": "Nebula"
+        },
+        "props": {
+          "name": "Nebula",
+          "usage": "Labs",
+          "description": "A cool purple-pink mix that fits experimental modules and product lab surfaces.",
+          "color": [
+            {
+              "color": "#2f54eb",
+              "percent": 0
+            },
+            {
+              "color": "#722ed1",
+              "percent": 44
+            },
+            {
+              "color": "#ff85c0",
+              "percent": 100
+            }
+          ]
+        },
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "b-multi",
+        "group": {
+          "zh": "样式 B",
+          "en": "Style B"
+        },
+        "label": {
+          "zh": "多光束",
+          "en": "Multiple"
+        },
+        "props": {
+          "type": "multi"
+        }
+      }
+    ]
+  },
+  {
+    "key": "spin",
+    "name": {
+      "zh": "Spin 加载中",
+      "en": "Spin"
+    },
+    "description": {
+      "zh": "加载指示器——经典四点旋转与进度圆环，支持数字进度与 auto 自动预估",
+      "en": "Loading indicator — classic 4-dot spinner and progress ring, with numeric percent or auto mode"
+    },
+    "category": "ai",
+    "platform": "desktop",
+    "tags": [
+      {
+        "zh": "加载",
+        "en": "Loading"
+      },
+      {
+        "zh": "反馈",
+        "en": "Feedback"
+      }
+    ],
+    "order": 30,
+    "visible": true,
+    "source": "components/spin",
+    "variants": [
+      {
+        "id": "auto",
+        "label": {
+          "zh": "Auto 自动",
+          "en": "Auto"
+        },
+        "props": {
+          "percent": "auto"
+        },
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "progress",
+        "label": {
+          "zh": "进度",
+          "en": "Progress"
+        },
+        "props": {
+          "percent": 40
+        },
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "spinning",
+        "label": {
+          "zh": "经典",
+          "en": "Classic"
+        },
+        "props": {
+          "percent": 0
+        },
+        "group": {
+          "zh": "样式 A",
+          "en": "Style A"
+        }
+      },
+      {
+        "id": "b-container",
+        "group": {
+          "zh": "样式 B",
+          "en": "Style B"
+        },
+        "label": {
+          "zh": "容器",
+          "en": "Container"
+        },
+        "props": {
+          "type": "container"
+        }
+      }
+    ]
   }
 ]

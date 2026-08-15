@@ -9,6 +9,8 @@ export interface Variant {
   /** 变体标识（同 entry 内唯一） */
   id: string
   label: LocalizedText
+  /** 可选分组（二维切换）：同组变体在切换器中分段展示，如样式 A/B 各含多个状态 */
+  group?: LocalizedText
   props: Record<string, unknown>
 }
 

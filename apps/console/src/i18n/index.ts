@@ -1,4 +1,5 @@
-// Console 轻量 i18n（与 showcase 同模式：模块级响应式单例 + 集中文案 + localStorage 持久化）
+// Console 轻量 i18n（与 showcase 同模式：模块级响应式单例 + 集中文案）。
+// 管理端固定中文（无语言切换 UI），setLocale 保留给测试与未来扩展。
 import { computed, ref } from 'vue'
 import { zh } from './messages/zh'
 import { en } from './messages/en'
@@ -12,20 +13,7 @@ export interface LocalizedText {
   en: string
 }
 
-const STORAGE_KEY = 'yz-locale'
-
-// 与 showcase 共用 yz-locale：两个应用语言偏好互通
-function getStorage(): Storage | null {
-  try {
-    return (globalThis.localStorage as Storage | undefined) ?? window.localStorage ?? null
-  } catch {
-    return null
-  }
-}
-
-export const locale = ref<Locale>(
-  getStorage()?.getItem(STORAGE_KEY) === 'en' ? 'en' : 'zh',
-)
+export const locale = ref<Locale>('zh')
 
 const messages = computed<Messages>(() => (locale.value === 'en' ? en : zh))
 
@@ -40,7 +28,6 @@ export function t(path: string): string {
 export function setLocale(next: Locale) {
   if (locale.value === next) return
   locale.value = next
-  getStorage()?.setItem(STORAGE_KEY, next)
   document.documentElement.lang = next === 'zh' ? 'zh-CN' : 'en'
 }
 
