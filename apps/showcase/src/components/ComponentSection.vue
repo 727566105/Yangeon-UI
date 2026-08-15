@@ -14,11 +14,12 @@ const activeVariant = ref(0)
 const copied = ref(false)
 const viewCodeOpen = ref(false)
 
-// 变体切换显示名（label 来自 registry.json 双语字段，随语言响应式切换）
+// 变体切换显示名（label 来自 registry.json 双语字段，随语言响应式切换；
+// label 为空时回退 id，避免切换按钮显示空白——与 Console 编辑页预览逻辑对齐）
 const displayVariants = computed(() =>
   props.entry.variants.map((v) => ({
     ...v,
-    label: localized(v.label),
+    label: localized(v.label) || v.id,
   })),
 )
 
@@ -74,7 +75,7 @@ async function copyCode() {
           class="component-section__tag"
         >{{ localized(tag) }}</span>
       </div>
-      <p class="component-section__desc">{{ localized(entry.description) }}</p>
+      <p class="component-section__desc" :title="localized(entry.description)">{{ localized(entry.description) }}</p>
     </div>
 
     <div class="component-section__surface">
@@ -215,7 +216,6 @@ async function copyCode() {
   margin: 0 0 0 auto;
   font-size: 12.5px;
   color: var(--yz-ink-3);
-  text-wrap: pretty;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

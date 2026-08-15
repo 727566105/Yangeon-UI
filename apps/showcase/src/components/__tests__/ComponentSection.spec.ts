@@ -54,6 +54,8 @@ describe('ComponentSection i18n copy', () => {
     await settle()
     expect(wrapper.find('.component-section__name').text()).toBe('Button 按钮')
     expect(wrapper.text()).toContain('发光、渐变、AI 加载状态一应俱全的按钮')
+    // 描述截断时 title 携带完整文案
+    expect(wrapper.find('.component-section__desc').attributes('title')).toBe('发光、渐变、AI 加载状态一应俱全的按钮')
     expect(wrapper.find('.component-section__tag').text()).toBe('基础')
     expect(wrapper.find('.component-section__action').attributes('aria-label')).toBe('复制代码')
     // 变体名随语言本地化（zh: 实心/AI 加载）
@@ -93,6 +95,22 @@ describe('ComponentSection i18n copy', () => {
     setLocale('zh')
     await settle()
     expect(wrapper.find('.variant-switcher').text()).toContain('实心')
+  })
+
+  it('falls back to the variant id when the localized label is empty', async () => {
+    const entry = registryEntries.find((e) => e.key === 'button')!
+    // 模拟缺失变体 label 的 entry（双语文案均为空串）
+    const noLabelEntry: typeof entry = {
+      ...entry,
+      variants: entry.variants.map((v) => ({ ...v, label: { zh: '', en: '' } })),
+    }
+    const wrapper = mount(ComponentSection, {
+      props: { entry: noLabelEntry, component: componentMap[entry.key], index: entry.order },
+      global: { stubs: { teleport: true } },
+    })
+    await settle()
+    const buttonTexts = wrapper.findAll('.variant-switcher__item').map((b) => b.text())
+    expect(buttonTexts).toEqual(noLabelEntry.variants.map((v) => v.id))
   })
 })
 
