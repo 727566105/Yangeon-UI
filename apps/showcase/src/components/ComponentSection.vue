@@ -9,6 +9,7 @@ const props = defineProps<{ entry: RegistryEntry; component: Component; index: n
 
 const activeVariant = ref(0)
 const copied = ref(false)
+const viewCodeOpen = ref(false)
 
 // 入场动画 stagger（beautifului: fade-up 600ms，60ms 递增延迟）
 const sectionStyle = computed(() => ({
@@ -24,7 +25,7 @@ const currentDemo = computed(
   () => demos[`../../../../packages/yzen-ui/src/components/${props.entry.key}/demo.vue`],
 )
 
-// demo 源码（构建期 ?raw 注入，用于复制代码）
+// demo 源码（构建期 ?raw 注入，用于复制代码与查看代码）
 const demoModules = import.meta.glob(
   '../../../../packages/yzen-ui/src/components/*/demo.vue',
   { query: '?raw', import: 'default', eager: true },
@@ -81,16 +82,70 @@ async function copyCode() {
         class="component-section__switcher"
       />
 
-      <button
-        class="component-section__copy"
-        type="button"
-        aria-label="查看代码"
-        title="复制代码"
-        @click="copyCode"
-      >
-        <YzIcon :name="copied ? 'check' : 'copy'" :size="14" />
-      </button>
+      <!-- 右上动作：复制 + 查看代码（beautifului: opacity-0 group-hover:opacity-100） -->
+      <div class="component-section__actions">
+        <button
+          class="component-section__action"
+          type="button"
+          :aria-label="copied ? '已复制' : '复制代码'"
+          :title="copied ? '已复制' : '复制代码'"
+          @click="copyCode"
+        >
+          <YzIcon :name="copied ? 'check' : 'copy'" :size="14" />
+        </button>
+        <button
+          class="component-section__action"
+          type="button"
+          aria-label="查看代码"
+          title="查看代码"
+          @click="viewCodeOpen = true"
+        >
+          <YzIcon name="chevron-right" :size="14" />
+        </button>
+      </div>
     </div>
+
+    <!-- 查看代码弹窗（beautifului: View code 面板） -->
+    <Teleport to="body">
+      <div
+        v-if="viewCodeOpen"
+        class="code-viewer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="查看代码"
+        @click.self="viewCodeOpen = false"
+      >
+        <div class="code-viewer__panel">
+          <div class="code-viewer__bar">
+            <span class="code-viewer__file">
+              <span class="code-viewer__filename">{{ entry.key }}/demo.vue</span>
+              <span class="code-viewer__lang">Vue SFC</span>
+            </span>
+            <span class="code-viewer__controls">
+              <button
+                class="code-viewer__btn"
+                type="button"
+                :aria-label="copied ? '已复制' : '复制代码'"
+                @click="copyCode"
+              >
+                <YzIcon :name="copied ? 'check' : 'copy'" :size="13" />
+                {{ copied ? '已复制' : '复制' }}
+              </button>
+              <button
+                class="code-viewer__btn"
+                type="button"
+                aria-label="关闭"
+                @click="viewCodeOpen = false"
+              >
+                <YzIcon name="close" :size="13" />
+                关闭
+              </button>
+            </span>
+          </div>
+          <pre class="code-viewer__pre"><code>{{ demoSource }}</code></pre>
+        </div>
+      </div>
+    </Teleport>
   </section>
 </template>
 
@@ -155,13 +210,14 @@ async function copyCode() {
   white-space: nowrap;
 }
 
-/* 预览表面：对齐 beautifului —— rounded-window(14px) bg-canvas p-3 shadow-hairline */
+/* 预览表面：对齐 beautifului —— rounded-window(14px) bg-canvas p-3 shadow-hairline min-height 272px */
 .component-section__surface {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  min-height: 272px;
   border-radius: var(--yz-radius-window);
   background: var(--yz-canvas);
   box-shadow: 0 0 0 1px var(--yz-line);
@@ -186,11 +242,21 @@ async function copyCode() {
   z-index: 1;
 }
 
-/* 复制按钮：预览右上角，hover 显示（beautifului: opacity-0 group-hover:opacity-100） */
-.component-section__copy {
+/* 右上动作组（beautifului: absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100） */
+.component-section__actions {
   position: absolute;
   top: 12px;
   right: 12px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 150ms var(--yz-ease-out-strong);
+}
+.component-section:hover .component-section__actions,
+.component-section:focus-within .component-section__actions {
+  opacity: 1;
+}
+.component-section__action {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -202,15 +268,92 @@ async function copyCode() {
   color: var(--yz-ink-3);
   box-shadow: 0 0 0 1px var(--yz-line-strong), 0 1px 2px #1018280d;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 150ms var(--yz-ease-out-strong), background-color 100ms var(--yz-ease-out-strong), color 100ms var(--yz-ease-out-strong);
+  transition: background-color 100ms var(--yz-ease-out-strong), color 100ms var(--yz-ease-out-strong);
 }
-.component-section:hover .component-section__copy,
-.component-section:focus-within .component-section__copy {
-  opacity: 1;
-}
-.component-section__copy:hover {
+.component-section__action:hover {
   background: var(--yz-hover);
   color: var(--yz-ink);
+}
+</style>
+
+<style>
+/* 查看代码弹窗（非 scoped：Teleport 到 body） */
+.code-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  animation: yz-fade-in 180ms ease-out both;
+}
+.code-viewer__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(720px, calc(100vw - 48px));
+  max-height: min(560px, calc(100vh - 96px));
+  border-radius: var(--yz-radius-card);
+  background: var(--yz-surface);
+  box-shadow: var(--yz-shadow-overlay);
+  overflow: hidden;
+}
+.code-viewer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--yz-line);
+}
+.code-viewer__file {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.code-viewer__filename {
+  font-family: var(--yz-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--yz-ink);
+}
+.code-viewer__lang {
+  font-size: 11.5px;
+  color: var(--yz-ink-3);
+}
+.code-viewer__controls {
+  display: flex;
+  gap: 4px;
+}
+.code-viewer__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--yz-ink-3);
+  cursor: pointer;
+  transition: background-color 100ms var(--yz-ease-out-strong), color 100ms var(--yz-ease-out-strong);
+}
+.code-viewer__btn:hover {
+  background: var(--yz-hover);
+  color: var(--yz-ink);
+}
+.code-viewer__pre {
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  background: var(--yz-inset);
+  font-family: var(--yz-font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--yz-ink-2);
+  white-space: pre;
 }
 </style>
