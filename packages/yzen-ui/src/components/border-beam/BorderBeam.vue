@@ -36,8 +36,11 @@ const props = withDefaults(defineProps<BorderBeamProps>(), {
 })
 
 const gradient = computed(() => getBorderBeamGradient(props.color))
-// 多光束：第 i 条延迟 -duration*i/count（与 antd 同款负延迟均匀错开）
-const mergedCount = computed(() => Math.max(1, Math.floor(props.count)))
+// 多光束：第 i 条延迟 -duration*i/count（与 antd 同款负延迟均匀错开）。
+// 非法 count（NaN/Infinity/负数/0）兜底为 1——Array.from({length: Infinity}) 会抛 RangeError
+const mergedCount = computed(() =>
+  Number.isFinite(props.count) && props.count >= 1 ? Math.floor(props.count) : 1,
+)
 const style = computed(() => ({
   '--yz-bb-gradient': gradient.value ?? 'none',
   '--yz-bb-duration': `${props.duration}s`,

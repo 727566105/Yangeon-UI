@@ -64,6 +64,17 @@
           "type": "glow",
           "loading": true
         }
+      },
+      {
+        "id": "pill",
+        "label": {
+          "zh": "胶囊",
+          "en": "Pill"
+        },
+        "props": {
+          "type": "solid",
+          "rounded": true
+        }
       }
     ],
     "platform": "desktop"
@@ -2485,6 +2496,75 @@
         },
         "props": {
           "type": "container"
+        }
+      }
+    ]
+  },
+  {
+    "key": "shimmer",
+    "name": {
+      "zh": "Shimmer 扫光文字",
+      "en": "Shimmer"
+    },
+    "description": {
+      "zh": "渐变扫光占位文字——AI 响应生成中的轻量提示，柔和流光掠过文本",
+      "en": "Gradient shimmer placeholder text — a light prompt while AI generates, with a soft light sweep across the text"
+    },
+    "category": "ai",
+    "platform": "desktop",
+    "tags": [
+      {
+        "zh": "加载",
+        "en": "Loading"
+      },
+      {
+        "zh": "文字",
+        "en": "Text"
+      }
+    ],
+    "order": 31,
+    "visible": true,
+    "source": "components/shimmer",
+    "variants": [
+      {
+        "id": "generating",
+        "label": {
+          "zh": "生成中",
+          "en": "Generating"
+        },
+        "props": {
+          "text": "Generating response…"
+        }
+      },
+      {
+        "id": "searching",
+        "label": {
+          "zh": "检索中",
+          "en": "Searching"
+        },
+        "props": {
+          "text": "Searching knowledge base…"
+        }
+      },
+      {
+        "id": "writing",
+        "label": {
+          "zh": "撰写中",
+          "en": "Writing"
+        },
+        "props": {
+          "text": "Writing response…"
+        }
+      },
+      {
+        "id": "thinking",
+        "label": {
+          "zh": "思考中",
+          "en": "Thinking"
+        },
+        "props": {
+          "text": "Thinking…",
+          "size": "sm"
         }
       }
     ]

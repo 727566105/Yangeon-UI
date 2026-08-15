@@ -3,7 +3,7 @@
 ## 项目是什么
 
 **Yzen-UI**：AI 科技风个人组件库（Vue 3 + TS + SCSS + CSS Variables，pnpm monorepo）。产品 = **组件库 + Showcase 展示站 + Console 管理端 + 开发消费接入（CLI/MCP）**：
-- 展示站**忠实复刻 beautifului.dev**（视觉 token 实测自其线上 CSS，20 个 AI 组件移植自其开源组件），样式与交互细节以 beautifului.dev 为对齐基准，支持中英文切换
+- 展示站**忠实复刻 beautifului.dev**（视觉 token 实测自其线上 CSS，AI 组件含 beautifului 移植与 antd 移植（Tabs/BorderBeam/Spin/Shimmer 等）），样式与交互细节以 beautifului.dev 为对齐基准，支持中英文切换
 - Console 管理端：本地 Web 应用（密码登录，`YZ_CONSOLE_PASSWORD` 环境变量，默认 123456），维护组件注册表/分类/收录
 - CLI（`yz` 命令）与 MCP（10 个只读 tools）：开发者与 AI 编程工具消费组件库内容与规范，零缓存实时跟随组件库扩展
 
@@ -24,7 +24,7 @@
 ## 目录结构
 
 ```
-packages/yzen-ui/          # 组件库（npm 包名 yzen-ui，28 个组件：8 basic + 20 AI）
+packages/yzen-ui/          # 组件库（npm 包名 yzen-ui，31 个组件：8 basic + 23 AI）
   src/theme/               # tokens-light.scss（浅色默认）/ tokens-dark.scss（html[data-theme="dark"]）
   src/styles/              # variables.scss（$yz-* 映射层）/ animations.scss（全局 keyframes）/ base.scss
   src/components/          # 每组件目录：<Name>.vue + index.ts + demo.vue + __tests__/<Name>.spec.ts
@@ -33,7 +33,7 @@ packages/registry-core/    # 项目感知层（CLI/MCP 共用）：组件/源码
 packages/cli/              # yz 命令（Node 22.18+ 原生 TS 直跑）：components(list/get 支持 --category/--platform 筛选)/platforms/tokens/style-guide/info/docs/init
 packages/mcp-server/       # MCP stdio server（10 个只读 tools，@modelcontextprotocol/server v2）
 apps/showcase/             # 展示站（Vite 应用）：锚点导航/registry 驱动区块/变体切换/复制+查看代码/中英切换/平台（端）全局切换
-apps/console/              # 管理端（Vite 应用 + dev server 中间件本地 API）：组件/分类/端/收录/开发接入/沙箱预览/密码登录；「收录组件」导航已隐藏，入口在列表页「+ 收录新组件」
+apps/console/              # 管理端（Vite 应用 + dev server 中间件本地 API）：组件/分类/端/收录/开发接入/沙箱预览/密码登录；「收录组件」导航已隐藏，入口在列表页「+ 收录新组件」；退出登录有确认弹窗（Esc/遮罩/取消，API 失败也兜底回落登录页）
 registry/registry.json     # 组件注册表单一真源（双语文案：name/description/tags/variant label 为 {zh,en}；platform 字段引用平台 key）
 registry/categories.json   # 分类清单（key + 双语 label + order，Console 可增删改排序）
 registry/platforms.json    # 平台（端）清单（key + 双语 label + order，Console 可增删改排序，展示站全局切换）
@@ -46,7 +46,7 @@ docs/                      # PRD-v2.0.md（产品需求）、research/（可行�
 pnpm install             # 安装依赖（pnpm 10，workspace）
 pnpm dev:showcase        # 展示站 dev（http://localhost:5173）
 pnpm dev:console         # 管理端 dev（http://localhost:5174，本地 API 仅本机/局域网）
-pnpm test                # 全量测试（七包 367：shared 22 + yzen-ui 154 + showcase 64 + console 80 + registry-core 22 + cli 14 + mcp 11）
+pnpm test                # 全量测试（七包 391：shared 22 + yzen-ui 175 + showcase 64 + console 83 + registry-core 22 + cli 14 + mcp 11）
 pnpm -F yzen-ui test -- src/components/<key>   # 单组件测试
 pnpm build:yzen-ui       # 组件库构建（ESM + CSS + dist/types）
 pnpm build:showcase      # 展示站构建
@@ -78,6 +78,8 @@ node packages/mcp-server/bin/yz-mcp.mjs   # MCP stdio server（Claude Desktop/Cu
 - **console dev server 中间件（server/registryApi.ts）改动需重启 dev server**（configureServer 启动时加载，不热更）；前端改动 HMR 正常
 - **structuredClone 无法克隆 Vue 响应式代理**：console 编辑页深拷贝用 `JSON.parse(JSON.stringify(entry))`
 - **正则 str.match 带 g flag 无捕获组**：registry-core 的 token 解析（GROUP_RE/TOKEN_RE）不能加 g（有注释说明）
+- **数值 prop 必须 `Number.isFinite` 守卫**：`Array.from({length: Infinity})` 会抛 RangeError 崩溃——count 类 props 用 `isFinite && >=1 ? floor : 兜底`（antd 原版同款；BorderBeam 有回归测试覆盖 NaN/Infinity/负数/小数）
+- **弹窗 Esc 关闭须挂 window 级监听**：`@keydown.esc` 在无 tabindex 的 div 上收不到事件（焦点在弹窗外时不冒泡到弹窗）；挂载/卸载配对注册，单测需 `Object.defineProperty(e,'key',{value:'Escape'})` 注入（happy-dom 的 KeyboardEvent 构造不初始化 key）
 - showcase 的 vite alias：`yzen-ui → packages/yzen-ui/src/index.ts`；console 的 alias 数组形式（shared 子路径精确映射在前，防前缀误吞）；vitest.config 同款
 - **Node 26 实验性 localStorage 会遮蔽 happy-dom 实现**：需要 test-setup.ts 内存垫片（console/showcase 已有）
 - `tsconfig.build.json` exclude `__tests__` 与 `demo.vue`（demo 的 `v-bind` 会触发必需 prop 类型错误，属预期）

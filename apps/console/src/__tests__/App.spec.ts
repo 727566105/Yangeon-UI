@@ -93,4 +93,31 @@ describe('App navigation', () => {
     expect(mockedLogout).toHaveBeenCalledTimes(1)
     expect(wrapper.find('.confirm-dialog').exists()).toBe(false)
   })
+
+  it('closes the dialog on Escape even when focus is outside it', async () => {
+    const wrapper = mount(App, { global: { stubs: { teleport: true } } })
+    await flushPromises()
+    await wrapper.find('.console__logout').trigger('click')
+    expect(wrapper.find('.confirm-dialog').exists()).toBe(true)
+    // window 级 Esc（焦点在弹窗外也能关闭）
+    // happy-dom 的 KeyboardEvent 构造不初始化 key，须手动注入（真实浏览器正常）
+    const e = new KeyboardEvent('keydown', { key: 'Escape' })
+    Object.defineProperty(e, 'key', { value: 'Escape' })
+    window.dispatchEvent(e)
+    await flushPromises()
+    expect(wrapper.find('.confirm-dialog').exists()).toBe(false)
+    expect(mockedLogout).not.toHaveBeenCalled()
+  })
+
+  it('recovers to the login view even when the logout API rejects', async () => {
+    mockedLogout.mockRejectedValue(new Error('network down'))
+    const wrapper = mount(App, { global: { stubs: { teleport: true } } })
+    await flushPromises()
+    await wrapper.find('.console__logout').trigger('click')
+    await wrapper.findAll('.confirm-dialog__btn')[1].trigger('click')
+    await flushPromises()
+    // 弹窗关闭 + 回落登录页（finally 保证），不因 API 失败卡死
+    expect(wrapper.find('.confirm-dialog').exists()).toBe(false)
+    expect(wrapper.find('.login, input[type="password"]').exists()).toBe(true)
+  })
 })

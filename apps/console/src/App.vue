@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
 import ComponentList from './views/ComponentList.vue'
 import ComponentEdit from './views/ComponentEdit.vue'
 import ImportWizard from './views/ImportWizard.vue'
@@ -58,9 +58,16 @@ function onLoggedIn() {
 const showLogoutConfirm = ref(false)
 
 async function onLogout() {
-  await logout()
-  authenticated.value = false
-  view.value = 'list'
+  try {
+    await logout()
+  } catch {
+    // API 失败也继续登出流程（logout 内部已清 token），不产生 unhandled rejection
+  } finally {
+    // 无论成功/失败：关闭弹窗并回落登录视图
+    showLogoutConfirm.value = false
+    authenticated.value = false
+    view.value = 'list'
+  }
 }
 
 function requestLogout() {
@@ -69,6 +76,13 @@ function requestLogout() {
 
 function cancelLogout() {
   showLogoutConfirm.value = false
+}
+
+// Esc 关闭：弹窗 div 无 tabindex 收不到 keydown，须挂 window 级监听
+onMounted(() => window.addEventListener('keydown', onEsc))
+onBeforeUnmount(() => window.removeEventListener('keydown', onEsc))
+function onEsc(e: KeyboardEvent) {
+  if (e.key === 'Escape' && showLogoutConfirm.value) cancelLogout()
 }
 
 function openEdit(key: string) {
@@ -198,14 +212,12 @@ function setTheme(dark: boolean) {
 
     <!-- 退出确认弹窗：遮罩 + 居中卡片，Esc / 点遮罩取消 -->
     <Teleport to="body">
-      <div
-        v-if="showLogoutConfirm"
-        class="confirm-mask"
-        @click.self="cancelLogout"
-        @keydown.esc="cancelLogout"
-      >
-        <div class="confirm-dialog" role="alertdialog" aria-modal="true" :aria-label="t('nav.logout')">
-          <p class="confirm-dialog__title">{{ t('nav.logoutConfirmTitle') }}</p>
+        <div
+          v-if="showLogoutConfirm"
+          class="confirm-mask"
+          @click.self="cancelLogout"
+        >
+        <div class="confirm-dialog" role="alertdialog" aria-modal="true" :aria-label="t('nav.logout')">          <p class="confirm-dialog__title">{{ t('nav.logoutConfirmTitle') }}</p>
           <p class="confirm-dialog__msg">{{ t('nav.logoutConfirmMsg') }}</p>
           <div class="confirm-dialog__actions">
             <button type="button" class="confirm-dialog__btn" @click="cancelLogout">

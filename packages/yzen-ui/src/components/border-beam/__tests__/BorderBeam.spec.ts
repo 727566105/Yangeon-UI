@@ -85,4 +85,21 @@ describe('YzBorderBeam', () => {
     expect(wrapper.findAll('.yz-border-beam__orb')).toHaveLength(1)
     expect(wrapper.attributes('style')).toContain('--yz-bb-inset: -3px')
   })
+
+  it('falls back to 1 beam for non-finite counts instead of crashing', () => {
+    // Array.from({length: Infinity}) 会抛 RangeError；NaN/Infinity 均须兜底
+    const nan = mount(BorderBeam, { props: { color: 'red', count: NaN } })
+    expect(nan.findAll('.yz-border-beam__orb')).toHaveLength(1)
+    const inf = mount(BorderBeam, { props: { color: 'red', count: Infinity } })
+    expect(inf.findAll('.yz-border-beam__orb')).toHaveLength(1)
+    // 小数向下取整；负数兜底 1
+    const frac = mount(BorderBeam, { props: { color: 'red', count: 2.9 } })
+    expect(frac.findAll('.yz-border-beam__orb')).toHaveLength(2)
+  })
+
+  it('renders slot content even without a color (gradient falls back)', () => {
+    const wrapper = mount(BorderBeam, { props: { count: 2 }, slots: { default: '<b>x</b>' } })
+    expect(wrapper.find('b').text()).toBe('x')
+    expect(wrapper.findAll('.yz-border-beam__orb')).toHaveLength(2)
+  })
 })
