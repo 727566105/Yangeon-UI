@@ -4,7 +4,8 @@ import ComponentList from './views/ComponentList.vue'
 import ComponentEdit from './views/ComponentEdit.vue'
 import ImportWizard from './views/ImportWizard.vue'
 import Categories from './views/Categories.vue'
-import { fetchRegistry, fetchCategories } from './api'
+import Login from './views/Login.vue'
+import { fetchRegistry, fetchCategories, getToken, setToken, logout, AuthError } from './api'
 import { useI18n } from './i18n'
 import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared'
 
@@ -17,6 +18,9 @@ const entries = ref<RegistryEntry[]>([])
 const categories = ref<RegistryCategory[]>([])
 const loadError = ref('')
 
+// 登录态：本地 token 存在视为已登录（API 401 时自动回落登录页）
+const authenticated = ref(!!getToken())
+
 async function load() {
   try {
     const [reg, cats] = await Promise.all([fetchRegistry(), fetchCategories()])
@@ -24,15 +28,32 @@ async function load() {
     categories.value = cats
     loadError.value = ''
   } catch (e) {
+    if (e instanceof AuthError) {
+      authenticated.value = false
+      return
+    }
     loadError.value = e instanceof Error ? e.message : String(e)
   }
 }
-onMounted(load)
+onMounted(() => {
+  if (authenticated.value) load()
+})
 
 // 视图切换时刷新数据（分类/组件可能在别的视图被修改；categories 供下拉数据驱动）
 watch(view, (v) => {
-  if (v !== 'categories') load()
+  if (v !== 'categories' && authenticated.value) load()
 })
+
+function onLoggedIn() {
+  authenticated.value = true
+  load()
+}
+
+async function onLogout() {
+  await logout()
+  authenticated.value = false
+  view.value = 'list'
+}
 
 function openEdit(key: string) {
   editingKey.value = key
@@ -58,7 +79,9 @@ function setTheme(dark: boolean) {
 </script>
 
 <template>
-  <div class="console">
+  <Login v-if="!authenticated" @logged-in="onLoggedIn" />
+
+  <div v-else class="console">
     <header class="console__bar">
       <div class="console__brand">
         <span class="console__logo">YZ</span>
@@ -124,6 +147,7 @@ function setTheme(dark: boolean) {
             </svg>
           </button>
         </div>
+        <button type="button" class="console__logout" @click="onLogout">{{ t('nav.logout') }}</button>
       </div>
     </header>
 
@@ -147,7 +171,7 @@ function setTheme(dark: boolean) {
         @saved="view = 'list'"
       />
       <Categories v-else-if="view === 'categories'" />
-      <ImportWizard v-else-if="view === 'import'" @done="openEdit" />
+      <ImportWizard v-else-if="view === 'import'" @done="view = 'list'" />
     </main>
   </div>
 </template>
@@ -273,6 +297,16 @@ function setTheme(dark: boolean) {
 }
 .theme-switch__item:hover { color: var(--yz-ink-2); }
 .theme-switch__item--active { color: var(--yz-ink); }
+.console__logout {
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: var(--yz-radius-control);
+  font-size: 12.5px;
+  color: var(--yz-ink-3);
+  cursor: pointer;
+}
+.console__logout:hover { background: var(--yz-hover); color: var(--yz-tag-red); }
 .console__error {
   margin: 16px 28px 0;
   padding: 10px 14px;

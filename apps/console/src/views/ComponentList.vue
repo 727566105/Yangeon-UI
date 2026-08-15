@@ -20,6 +20,11 @@ const filtered = computed(() => {
     return hay.includes(q)
   })
 })
+
+const categoryLabel = (key: string) => {
+  const c = props.categories.find((x) => x.key === key)
+  return c ? localized(c.label) : key
+}
 </script>
 
 <template>
@@ -62,7 +67,7 @@ const filtered = computed(() => {
               <code class="list__key">{{ e.key }}</code>
               <span class="list__name">{{ localized(e.name) }}</span>
             </td>
-            <td class="list__td"><code class="list__key">{{ e.category }}</code></td>
+            <td class="list__td"><code class="list__key">{{ categoryLabel(e.category) }}</code></td>
             <td class="list__td">
               <span v-for="tag in e.tags" :key="tag.zh" class="list__tag">{{ localized(tag) }}</span>
             </td>
@@ -73,6 +78,7 @@ const filtered = computed(() => {
                 :class="{ 'list__dot--on': e.visible }"
                 :title="e.visible ? t('list.visible') : t('list.hidden')"
               />
+              <span v-if="!e.visible" class="list__hidden-badge">{{ t('list.hidden') }}</span>
             </td>
             <td class="list__td list__td--action">
               <button type="button" class="list__edit" @click="$emit('edit', e.key)">
@@ -199,6 +205,16 @@ const filtered = computed(() => {
   background: var(--yz-ink-3);
 }
 .list__dot--on { background: var(--yz-green); }
+.list__hidden-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: var(--yz-field);
+  font-size: 11px;
+  color: var(--yz-ink-3);
+  white-space: nowrap;
+}
 .list__edit {
   border: none;
   background: transparent;

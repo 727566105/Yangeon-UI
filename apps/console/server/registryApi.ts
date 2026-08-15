@@ -162,10 +162,73 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
 
 type NextFn = (err?: unknown) => void
 
+// ---------- 登录鉴权（个人工具级：单密码 + 内存 token 会话） ----------
+
+// 密码来源：环境变量 YZ_CONSOLE_PASSWORD；未配置时用默认值并在启动时打印提醒。
+// token 仅存内存（dev server 重启即失效，需重新登录）。
+const DEFAULT_PASSWORD = 'yzenui'
+export function resolvePassword(): string {
+  return process.env.YZ_CONSOLE_PASSWORD?.trim() || DEFAULT_PASSWORD
+}
+
+const validTokens = new Set<string>()
+
+export function issueToken(password: string): string | null {
+  if (password !== resolvePassword()) return null
+  const token = crypto.randomUUID()
+  validTokens.add(token)
+  return token
+}
+
+export function isValidToken(token: string | undefined | null): boolean {
+  return !!token && validTokens.has(token)
+}
+
+export function clearToken(token: string) {
+  validTokens.delete(token)
+}
+
+function extractToken(req: IncomingMessage): string | undefined {
+  const header = req.headers.authorization
+  if (header?.startsWith('Bearer ')) return header.slice(7)
+  return undefined
+}
+
 export function registryApiMiddleware(api: RegistryApi = defaultApi): (req: IncomingMessage, res: ServerResponse, next: NextFn) => void {
   return async (req, res, next) => {
     try {
       const url = (req.url ?? '').split('?')[0]
+
+      // 只处理 /api/* 请求；页面与静态资源交给 Vite 后续中间件
+      if (!url.startsWith('/api/')) {
+        next()
+        return
+      }
+
+      // 登录与登出不要求 token
+      if (req.method === 'POST' && url === '/api/login') {
+        const body = JSON.parse((await readBody(req)) || '{}') as { password?: string }
+        const token = issueToken(body.password ?? '')
+        if (token) {
+          sendJson(res, 200, { ok: true, token })
+        } else {
+          sendJson(res, 401, { ok: false, error: 'invalid password' })
+        }
+        return
+      }
+      if (req.method === 'POST' && url === '/api/logout') {
+        const token = extractToken(req)
+        if (token) clearToken(token)
+        sendJson(res, 200, { ok: true })
+        return
+      }
+
+      // 其余 /api/* 全部要求有效 token
+      if (!isValidToken(extractToken(req))) {
+        sendJson(res, 401, { ok: false, error: 'unauthorized' })
+        return
+      }
+
       if (req.method === 'GET' && url === '/api/registry') {
         sendJson(res, 200, api.readRegistry())
         return
@@ -211,6 +274,12 @@ export function registryApiPlugin(): Plugin {
   return {
     name: 'yzen-console-registry-api',
     configureServer(server) {
+      if (!process.env.YZ_CONSOLE_PASSWORD) {
+        console.warn(
+          `[console] ⚠️ 未配置 YZ_CONSOLE_PASSWORD，登录密码使用默认值 "${DEFAULT_PASSWORD}"。` +
+            '局域网访问场景建议设置环境变量修改密码。',
+        )
+      }
       server.middlewares.use(registryApiMiddleware())
     },
   }

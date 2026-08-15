@@ -1,8 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createRegistryApi, keyToComponentName } from '../registryApi'
+import {
+  createRegistryApi,
+  keyToComponentName,
+  issueToken,
+  isValidToken,
+  clearToken,
+  registryApiMiddleware,
+} from '../registryApi'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { RegistryCategory, RegistryEntry } from '@yzen-ui/shared/types'
 
 // 每个用例独立的临时仓库根（registry/ + packages/yzen-ui/src/components/ 最小结构）
@@ -154,5 +162,136 @@ describe('registryApi categories', () => {
     if (!result.ok) {
       expect(result.errors.join()).toContain('ghost-cat')
     }
+  })
+})
+
+// ---------- 登录鉴权 ----------
+
+// mock 请求/响应（最小可用）
+function mockReq(over: Partial<IncomingMessage> = {}): IncomingMessage {
+  return {
+    method: 'GET',
+    url: '/api/registry',
+    headers: {},
+    on: () => ({}) as IncomingMessage,
+    ...over,
+  } as unknown as IncomingMessage
+}
+
+function mockRes(): { res: ServerResponse; out: { status: number; body: string } } {
+  const out = { status: 0, body: '' }
+  const res = {
+    statusCode: 0,
+    setHeader: () => {},
+    end: (chunk?: unknown) => {
+      out.status = res.statusCode
+      out.body = String(chunk ?? '')
+    },
+  } as unknown as ServerResponse
+  return { res, out }
+}
+
+// 携带 body 的 POST 请求
+function mockPost(url: string, body: unknown): IncomingMessage {
+  const payload = JSON.stringify(body)
+  let sent = false
+  return {
+    method: 'POST',
+    url,
+    headers: {},
+    on: (event: string, cb: (chunk?: Buffer) => void) => {
+      if (event === 'data' && !sent) {
+        sent = true
+        cb(Buffer.from(payload))
+      } else if (event === 'end') {
+        cb()
+      }
+      return {} as IncomingMessage
+    },
+  } as unknown as IncomingMessage
+}
+
+describe('auth', () => {
+  it('issues a token for the correct password only', () => {
+    expect(issueToken('yzenui')).toBeTruthy()
+    expect(issueToken('wrong-password')).toBeNull()
+  })
+
+  it('validates and clears tokens', () => {
+    const token = issueToken('yzenui')!
+    expect(isValidToken(token)).toBe(true)
+    clearToken(token)
+    expect(isValidToken(token)).toBe(false)
+  })
+
+  it('rejects API calls without a token (401)', async () => {
+    const middleware = registryApiMiddleware(api)
+    const { res, out } = mockRes()
+    await middleware(mockReq(), res, () => {})
+    expect(out.status).toBe(401)
+    expect(JSON.parse(out.body).error).toBe('unauthorized')
+  })
+
+  it('passes non-/api requests through to next() (pages not blocked)', async () => {
+    const middleware = registryApiMiddleware(api)
+    let nextCalled = false
+    const { res, out } = mockRes()
+    await middleware(mockReq({ url: '/', method: 'GET' }), res, () => (nextCalled = true))
+    expect(nextCalled).toBe(true)
+    expect(out.status).toBe(0) // 未写响应，交给 Vite
+  })
+
+  it('rejects API calls with an invalid token (401)', async () => {
+    const middleware = registryApiMiddleware(api)
+    const { res, out } = mockRes()
+    await middleware(mockReq({ headers: { authorization: 'Bearer bogus' } }), res, () => {})
+    expect(out.status).toBe(401)
+  })
+
+  it('accepts API calls with a valid token', async () => {
+    const token = issueToken('yzenui')!
+    const middleware = registryApiMiddleware(api)
+    const { res, out } = mockRes()
+    await middleware(
+      mockReq({ headers: { authorization: `Bearer ${token}` } }),
+      res,
+      () => {},
+    )
+    expect(out.status).toBe(200)
+  })
+
+  it('accepts login with the correct password and returns a token', async () => {
+    const middleware = registryApiMiddleware(api)
+    const { res, out } = mockRes()
+    await middleware(mockPost('/api/login', { password: 'yzenui' }), res, () => {})
+    expect(out.status).toBe(200)
+    const parsed = JSON.parse(out.body)
+    expect(parsed.ok).toBe(true)
+    expect(isValidToken(parsed.token)).toBe(true)
+  })
+
+  it('rejects login with the wrong password (401)', async () => {
+    const middleware = registryApiMiddleware(api)
+    const { res, out } = mockRes()
+    await middleware(mockPost('/api/login', { password: 'nope' }), res, () => {})
+    expect(out.status).toBe(401)
+  })
+
+  it('logout invalidates the token', async () => {
+    const token = issueToken('yzenui')!
+    const middleware = registryApiMiddleware(api)
+    const { res, out } = mockRes()
+    await middleware(
+      mockReq({
+        method: 'POST',
+        url: '/api/logout',
+        headers: { authorization: `Bearer ${token}` },
+        on: () => ({}) as IncomingMessage,
+      }),
+      res,
+      () => {},
+    )
+    expect(out.status).toBe(200)
+    expect(isValidToken(token)).toBe(false)
   })
 })
